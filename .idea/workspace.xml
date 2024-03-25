@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="add timeline maps config" />
+    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="add search filter">
+      <change beforePath="$PROJECT_DIR$/timeline/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/timeline/views.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,7 +23,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="feature/be-map" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -83,7 +85,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="add 20 march progress" />
     <MESSAGE value="add timeline maps config" />
-    <option name="LAST_COMMIT_MESSAGE" value="add timeline maps config" />
+    <MESSAGE value="add search filter" />
+    <option name="LAST_COMMIT_MESSAGE" value="add search filter" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
