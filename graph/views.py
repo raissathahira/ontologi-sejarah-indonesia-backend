@@ -77,7 +77,7 @@ def get_image(request,name):
         
         #show response as JSON
         data = data.json()
-        # return JsonResponse(data,safe='false')
+        return JsonResponse(data,safe='false')
         
         image = data['entities'][id]['claims']['P18'][0]["mainsnak"]["datavalue"]['value']
         res = {'image':common + image}
@@ -111,28 +111,26 @@ def template(sourcedata,prefix,name):
                 prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
                 prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
                 prefix resource: <http://dbpedia.org/resource/> 
-                select distinct ?p ?o where{ ?s rdfs:label \""""+name+"""\".
-                                              ?s ?p ?o.}
+                prefix sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
+                select distinct ?p ?label where{ ?s rdfs:label \""""+name+"""\".
+                                              ?s ?p ?o.
+                                              ?o rdfs:label ?label.
+                                              ?p rdfs:range ?r.
+                                              ?r rdfs:subClassOf sem:Core}
                 """
             )
+    
     sparql.setReturnFormat(JSON)
     ret = sparql.queryAndConvert()
     hasil = {}
-                # print(ret)
+    # print(ret)
     variable = ret['head']['vars']
     for r in ret["results"]["bindings"]:
         if(hasil.get(clean(r['p']['value']),-1)==-1):
-            print(hasil)
-            hasil[clean(r['p']['value'])] = [clean(r['o']['value'])]
+            hasil[clean(r['p']['value'])] = [clean(r['label']['value'])]
         else :
-            print(hasil)
-            hasil[clean(r['p']['value'])].append(clean(r['o']['value']))
-        # temp = {r['p']['value']:r['o']['value']}
-        # for var,value in r.items():
-        #     if(value['type']=="bnode"):
-        #         continue
-        #     temp.append(value['value'])
-        # hasil.append(temp)
+            hasil[clean(r['p']['value'])].append(clean(r['label']['value']))
+        
     return hasil
 
 def template2(sourcedata,prefix):
@@ -154,18 +152,22 @@ def template2(sourcedata,prefix):
                 prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
                 prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
                 prefix resource: <http://dbpedia.org/resource/> 
-                prefix sem: <https://semanticweb.cs.vu.nl/2009/11/sem/>
-                select distinct ?label  where{  ?s rdf:type :MilitaryConflict.
-                                            ?s rdfs:label ?label}
+                prefix sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
+                select distinct ?s ?label  where{  ?s rdf:type sem:Event.
+                                                ?s rdfs:label ?label.}
                 """ 
             )
     sparql.setReturnFormat(JSON)
     ret = sparql.queryAndConvert()
     hasil = []
+    hasil2 = {}
+    
                 # print(ret)
     variable = ret['head']['vars']
     for r in ret["results"]["bindings"]:
         hasil.append(clean(r['label']['value']))
+        hasil2[clean(r['label']['value'])] = clean(r['s']['value'])
+        hasil2[clean(r['s']['value'])] = clean(r['label']['value'])
 
     sparql = SPARQLWrapper(
             source
@@ -181,8 +183,8 @@ def template2(sourcedata,prefix):
                 prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
                 prefix resource: <http://dbpedia.org/resource/> 
                 prefix sem: <https://semanticweb.cs.vu.nl/2009/11/sem/>
-                select distinct ?label  where{  ?s rdf:type :Person.
-                                                ?s rdfs:label ?label}
+                select distinct ?s ?label  where{  ?s rdf:type sem:Actor.
+                                                ?s rdfs:label ?label.}
                 """ 
             )
     sparql.setReturnFormat(JSON)
@@ -192,8 +194,11 @@ def template2(sourcedata,prefix):
     variable = ret['head']['vars']
     for r in ret["results"]["bindings"]:
         hasil.append(clean(r['label']['value']))
+        hasil2[clean(r['label']['value'])] = clean(r['s']['value'])
+        hasil2[clean(r['s']['value'])] = clean(r['label']['value'])
+        
 
-    return hasil
+    return [hasil,hasil2]
 
 def clean(iri):
     # print(iri)
