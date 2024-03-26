@@ -1,3 +1,5 @@
+import re
+
 from SPARQLWrapper import SPARQLWrapper, JSON
 from django.http import JsonResponse
 
@@ -16,10 +18,15 @@ def fetch_data(request):
         prefix time:  <http://www.w3.org/2006/time#>
         prefix vcard: <http://www.w3.org/2006/vcard/ns#>
         prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
-        select ?baseURI ?actor ?label ?lat ?lon ?dateStart ?dateEnd where {
+        select ?baseURI ?actor ?summary ?wikiurl ?image ?pageTitle ?label ?lat ?lon ?dateStart ?dateEnd where {
             ?actor rdf:type sem:Actor ;
             rdfs:label ?label ;
-            :location ?feature .
+            :location ?feature ;
+            :page_title ?pageTitle ;
+            :summary ?summary;
+            :wikiurl ?wikiurl;
+            OPTIONAL { ?actor :image_map ?image } .
+  		    OPTIONAL { ?actor :image_flag ?image } .
 
             ?feature geo:hasGeometry ?geometry .
             ?geometry :latitude ?lat ;
@@ -51,6 +58,9 @@ def fetch_data(request):
         data.append({
             "baseURI": result["baseURI"]["value"],
             "actor": result["actor"]["value"].replace((result["baseURI"]["value"]), ""),
+            "summary": re.sub(r'\n', '<br>', result["summary"]["value"]),
+            "wikiurl": result["wikiurl"]["value"],
+            "image": result.get("image", {"value": ""})["value"],
             "name": result["label"]["value"],
             "dateStart": result["dateStart"]["value"],
             "dateEnd": result["dateEnd"]["value"],
