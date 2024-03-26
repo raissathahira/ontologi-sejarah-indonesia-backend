@@ -98,3 +98,45 @@ select DISTINCT ?result
     
 }} GROUP BY ?result ?strength1 ?strength2 ?casualties1 ?casualties2 ?causes
 """
+
+military_person = """
+select DISTINCT 
+(GROUP_CONCAT(DISTINCT ?commands; SEPARATOR=",") AS ?commands)
+(GROUP_CONCAT(DISTINCT ?commandsLabel; SEPARATOR=",") AS ?commandsLabel)
+(GROUP_CONCAT(DISTINCT ?children; SEPARATOR=",") AS ?children)
+(GROUP_CONCAT(DISTINCT ?childrenLabel; SEPARATOR=",") AS ?childrenLabel)
+(GROUP_CONCAT(DISTINCT ?battles; SEPARATOR=",") AS ?battles)
+(GROUP_CONCAT(DISTINCT ?battlesLabel; SEPARATOR=",") AS ?battlesLabel)
+
+?label ?religion ?laterwork ?birthname where {{    
+    :{0} rdfs:label ?label
+    OPTIONAL {{
+        :{0} :religion ?religion 
+        
+    }}
+    OPTIONAL {{
+        :{0} :laterwork ?laterwork 
+        
+    }}
+    OPTIONAL {{
+        :{0} :birth_name ?birthname 
+        
+    }}
+    OPTIONAL {{
+        :{0} :commands ?commands .
+        ?commands rdfs:label ?commandsLabel
+    }}
+    
+    OPTIONAL {{
+        :{0} :children ?children .
+        ?children rdfs:label ?childrenLabel
+    }}
+    
+    OPTIONAL {{
+        :{0} :battles ?battles .
+        ?battles rdfs:label ?battlesLabel
+    }}
+    
+    
+}} GROUP BY ?label ?religion ?birthname ?laterwork
+"""
