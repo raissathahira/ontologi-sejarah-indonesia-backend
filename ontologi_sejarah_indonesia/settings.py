@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'graph',
-    'map'
+    'map',
+    'timeline'
 ]
 
 MIDDLEWARE = [

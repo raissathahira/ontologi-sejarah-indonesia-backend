@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('graph/',include(('graph.urls'))),
     path('map/', include('map.urls')),
+    path('timeline/', include('timeline.urls'))
 ]
