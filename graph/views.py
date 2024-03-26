@@ -153,7 +153,8 @@ def template2(sourcedata,prefix):
                 prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
                 prefix resource: <http://dbpedia.org/resource/> 
                 prefix sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
-                select distinct ?s ?label  where{  ?s rdf:type sem:Event.
+                select distinct ?s ?label  where{  ?s rdf:type ?p.
+                                                    ?p rdfs:subClassOf sem:Event.
                                                 ?s rdfs:label ?label.}
                 """ 
             )
@@ -182,8 +183,9 @@ def template2(sourcedata,prefix):
                 prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
                 prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
                 prefix resource: <http://dbpedia.org/resource/> 
-                prefix sem: <https://semanticweb.cs.vu.nl/2009/11/sem/>
-                select distinct ?s ?label  where{  ?s rdf:type sem:Actor.
+                prefix sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
+                select distinct ?s ?label  where{  ?s rdf:type ?p.
+                                                    ?p rdfs:subClassOf sem:Actor.
                                                 ?s rdfs:label ?label.}
                 """ 
             )
