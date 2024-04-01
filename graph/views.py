@@ -89,7 +89,7 @@ def get_image(request,name):
     
 
 
-blazegraph_url ="http://localhost:7200/repositories/testing"
+blazegraph_url ="http://localhost:7200/repositories/indonesian-history-ontology"
 
 def template(sourcedata,prefix,name):
     if(sourcedata=="internal"):
