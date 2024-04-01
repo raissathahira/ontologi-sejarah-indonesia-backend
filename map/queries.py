@@ -11,6 +11,32 @@ prefix vcard: <http://www.w3.org/2006/vcard/ns#>
 prefix xsd:   <http://www.w3.org/2001/XMLSchema#> 
 """
 
+get_all = """
+select DISTINCT ?a ?label where {
+    ?a rdf:type ?type ;
+    rdfs:label ?label .
+    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+}"""
+
+get_map = """ 
+select DISTINCT ?event ?label ?lat ?lon ?dateStart ?dateEnd where {
+    ?event rdf:type sem:Event ;
+    	rdfs:label ?label ;
+    	:location ?feature .
+    
+    ?feature geo:hasGeometry ?geometry .
+    ?geometry :latitude ?lat ;
+    	:longitude ?lon .
+    
+    ?event time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 ;
+    	time:hasEnd ?inst2 .
+    
+    ?inst1 time:inXSDDate ?dateStart .
+    ?inst2 time:inXSDDate ?dateEnd .
+}
+"""
+
 get_types = """
 select DISTINCT 
 (GROUP_CONCAT(distinct ?typeLabel; SEPARATOR=",") as ?typeLabels)
