@@ -110,11 +110,10 @@ def get_event_detail(iri, detail):
         (res["feature"]["value"][len(base_prefix):], res["featureLabel"]["value"])
         for res in result
     ])
-    
+
     if "location" in result[0]:
         detail["location"] = [mapping(wkt.loads(res["location"]["value"])) for res in result]
         detail["bounds"] = get_largest_bound(detail["location"])
-     
     
 def get_military_conflict_detail(iri, detail):
     query = (prefix + military_conflict).format(iri)
