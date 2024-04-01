@@ -3,30 +3,12 @@ from django.http import JsonResponse
 from shapely import wkt
 from shapely.geometry import mapping, shape
 from shapely.ops import unary_union
-from .queries import prefix, get_types, event, military_conflict
+from .queries import prefix, get_map, get_all, get_types, event, military_conflict
 
 base_prefix = "http://127.0.0.1:3333/"
 
-def fetch_data(request):
-    query = prefix + """
-    
-select DISTINCT ?event ?label ?lat ?lon ?dateStart ?dateEnd where {
-    ?event rdf:type sem:Event ;
-    	rdfs:label ?label ;
-    	:location ?feature .
-    
-    ?feature geo:hasGeometry ?geometry .
-    ?geometry :latitude ?lat ;
-    	:longitude ?lon .
-    
-    ?event time:hasTime ?tempEntity .
-    ?tempEntity time:hasBeginning ?inst1 ;
-    	time:hasEnd ?inst2 .
-    
-    ?inst1 time:inXSDDate ?dateStart .
-    ?inst2 time:inXSDDate ?dateEnd .
-}
-"""
+def fetch_map_data(request):
+    query = prefix + get_map
 
     sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
@@ -35,7 +17,6 @@ select DISTINCT ?event ?label ?lat ?lon ?dateStart ?dateEnd where {
     results = sparql.query().convert()
     
     data = []
-
     
     for result in results["results"]["bindings"]:
         data.append({
@@ -45,6 +26,25 @@ select DISTINCT ?event ?label ?lat ?lon ?dateStart ?dateEnd where {
             "yearEnd": int(result["dateEnd"]["value"][:4]),
             "latitude": float(result["lat"]["value"]),
             "longitude": float(result["lon"]["value"]),
+        })
+    
+    return JsonResponse(data, safe=False)
+
+def fetch_all_data(request):
+    query = prefix + get_all
+
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+
+    results = sparql.query().convert()
+    
+    data = []
+    
+    for result in results["results"]["bindings"]:
+        data.append({
+            "iri": result["a"]["value"][len(base_prefix):],
+            "name": result["label"]["value"]
         })
     
     return JsonResponse(data, safe=False)
@@ -111,9 +111,9 @@ def get_event_detail(iri, detail):
         for res in result
     ])
     
-    detail["location"] = [mapping(wkt.loads(res["location"]["value"])) for res in result]
-    
-    detail["bounds"] = get_largest_bound(detail["location"]) 
+    if "location" in result[0]:
+        detail["location"] = [mapping(wkt.loads(res["location"]["value"])) for res in result]
+        detail["bounds"] = get_largest_bound(detail["location"])
      
     
 def get_military_conflict_detail(iri, detail):

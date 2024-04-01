@@ -46,7 +46,7 @@ def fetch_data(request):
         }
         """ % name
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/orde-lama")
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -95,7 +95,7 @@ def location(request, name):
     }}
 """ % name
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/orde-lama")
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
