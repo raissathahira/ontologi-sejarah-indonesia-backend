@@ -70,6 +70,26 @@ where {{
 }}
 """
 
+actor = """
+select DISTINCT ?label ?dateStart ?dateEnd
+
+where {{
+    :{0} rdfs:label ?label .
+        
+        
+    :{0} time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 ;
+    	time:hasEnd ?inst2 .
+    optional {{
+    ?inst1 time:inXSDDate ?dateStart .
+    }}
+    optional {{
+    ?inst2 time:inXSDDate ?dateEnd .
+    }}
+    
+    
+}}
+"""
 
 military_conflict = """
 select DISTINCT ?result 
@@ -133,7 +153,9 @@ select DISTINCT
 (GROUP_CONCAT(DISTINCT ?childrenLabel; SEPARATOR=",") AS ?childrenLabel)
 (GROUP_CONCAT(DISTINCT ?battles; SEPARATOR=",") AS ?battles)
 (GROUP_CONCAT(DISTINCT ?battlesLabel; SEPARATOR=",") AS ?battlesLabel)
-
+(GROUP_CONCAT(DISTINCT ?spouse; SEPARATOR=",") AS ?spouse)
+(GROUP_CONCAT(DISTINCT ?spouseLabel; SEPARATOR=",") AS ?spouseLabel)
+(GROUP_CONCAT(DISTINCT ?awards; SEPARATOR=",") AS ?awards)
 ?label ?religion ?laterwork ?birthname where {{    
     :{0} rdfs:label ?label
     OPTIONAL {{
@@ -149,10 +171,17 @@ select DISTINCT
         
     }}
     OPTIONAL {{
+        :{0} :awards ?awards 
+        
+    }}
+    OPTIONAL {{
         :{0} :commands ?commands .
         ?commands rdfs:label ?commandsLabel
     }}
-    
+    OPTIONAL {{
+        :{0} :spouse ?spouse .
+        ?spouse rdfs:label ?spouseLabel
+    }}
     OPTIONAL {{
         :{0} :children ?children .
         ?children rdfs:label ?childrenLabel
