@@ -1,5 +1,6 @@
 import re
 
+import wikipedia
 from SPARQLWrapper import SPARQLWrapper, JSON
 from django.http import JsonResponse
 
@@ -8,7 +9,7 @@ def fetch_data(request):
     name = request.GET.get('filter[name]', '')
 
     query = """
-        prefix :      <http://localhost:3333/>
+        prefix :      <http://127.0.0.1:3333/>
         prefix foaf:  <http://xmlns.com/foaf/0.1/>
         prefix geo:   <http://www.opengis.net/ont/geosparql#>
         prefix owl:   <http://www.w3.org/2002/07/owl#>
@@ -18,35 +19,28 @@ def fetch_data(request):
         prefix time:  <http://www.w3.org/2006/time#>
         prefix vcard: <http://www.w3.org/2006/vcard/ns#>
         prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
-        select ?baseURI ?actor ?summary ?wikiurl ?image ?pageTitle ?label ?lat ?lon ?dateStart ?dateEnd where {
-            ?actor rdf:type sem:Actor ;
-            rdfs:label ?label ;
-            :location ?feature ;
-            :page_title ?pageTitle ;
-            :summary ?summary;
-            :wikiurl ?wikiurl;
-            OPTIONAL { ?actor :image_map ?image } .
-  		    OPTIONAL { ?actor :image_flag ?image } .
+        select ?baseURI ?event ?label ?pageTitle ?summary ?wikiurl ?image ?dateStart ?dateEnd where {
+            ?event rdf:type sem:Event ;
+    		       rdfs:label ?label;
+    				:summary ?summary;
+    				:wikiurl ?wikiurl;
+    		OPTIONAL { ?event :image ?image }.
 
-            ?feature geo:hasGeometry ?geometry .
-            ?geometry :latitude ?lat ;
-                :longitude ?lon .
-
-            ?actor time:hasTime ?tempEntity .
+            ?event time:hasTime ?tempEntity .
             ?tempEntity time:hasBeginning ?inst1 ;
                 time:hasEnd ?inst2 .
 
             ?inst1 time:inXSDDate ?dateStart .
             ?inst2 time:inXSDDate ?dateEnd .
 
-            BIND(REPLACE(STR(?actor), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI)
+            BIND(REPLACE(STR(?event), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI)
             
             FILTER regex(str(?label), "%s", "i") 
              
         }
         """ % name
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/orde-lama")
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -54,26 +48,34 @@ def fetch_data(request):
 
     data = []
 
+    # if have no image bisa pake pagetitle buat ambil
+
     for result in results["results"]["bindings"]:
         data.append({
             "baseURI": result["baseURI"]["value"],
-            "actor": result["actor"]["value"].replace((result["baseURI"]["value"]), ""),
+            "event": result["event"]["value"].replace((result["baseURI"]["value"]), ""),
             "summary": re.sub(r'\n', '<br>', result["summary"]["value"]),
             "wikiurl": result["wikiurl"]["value"],
-            "image": result.get("image", {"value": ""})["value"],
+            "image": check_image_availability(result),
             "name": result["label"]["value"],
             "dateStart": result["dateStart"]["value"],
             "dateEnd": result["dateEnd"]["value"],
-            "latitude": float(result["lat"]["value"]),
-            "longitude": float(result["lon"]["value"]),
         })
 
     return JsonResponse(data, safe=False)
 
+def check_image_availability(result):
+    if result.get("image") is None:
+        # wikipedia.set_lang("id")
+        # page = wikipedia.page(result["pageTitle"]["value"])
+        # print(page.images[0])
+        return 'Flag_of_Indonesia.svg'
+    return result["image"]["value"]
+
 
 def location(request, name):
     query = """
-    prefix :      <http://localhost:3333/> 
+    prefix :      <http://127.0.0.1:3333/>
     prefix foaf:  <http://xmlns.com/foaf/0.1/> 
     prefix geo:   <http://www.opengis.net/ont/geosparql#> 
     prefix owl:   <http://www.w3.org/2002/07/owl#> 
@@ -85,7 +87,7 @@ def location(request, name):
     prefix xsd:   <http://www.w3.org/2001/XMLSchema#> 
     
     select ?label ?lat ?lon where {{
-        :%s rdf:type sem:Actor ;
+        :%s rdf:type sem:Event ;
             rdfs:label ?label ;
             :location ?feature .
         
@@ -95,7 +97,7 @@ def location(request, name):
     }}
 """ % name
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/orde-lama")
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
