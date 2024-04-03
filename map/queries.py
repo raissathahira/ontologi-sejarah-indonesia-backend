@@ -41,7 +41,7 @@ get_types = """
 select DISTINCT 
 (GROUP_CONCAT(distinct ?typeLabel; SEPARATOR=",") as ?typeLabels)
 where {{
-    :{0} rdf:type ?type .
+    <http://127.0.0.1:3333/{0}> rdf:type ?type .
     ?type rdfs:label ?typeLabel .
 }}
 """
