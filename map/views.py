@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from shapely import wkt
 from shapely.geometry import mapping, shape
 from shapely.ops import unary_union
-from .queries import prefix, get_map, get_all, get_search, get_types, event, military_conflict
+from .queries import prefix, get_map, get_all, get_search,get_types, event,actor, military_conflict, military_person
 
 base_prefix = "http://127.0.0.1:3333/"
 
@@ -72,7 +72,9 @@ def fetch_search_data(request, search):
 def get_detail(request, iri):
     type_func = {
         "Event": get_event_detail,
-        "Military Conflict": get_military_conflict_detail
+        "Military Conflict": get_military_conflict_detail,
+        "Military Person": get_military_person_detail,
+        "Actor": get_actor_detail
     }
     
     query = (prefix + get_types).format(iri)
@@ -136,6 +138,23 @@ def get_event_detail(iri, detail):
     if "location" in result[0]:
         detail["location"] = [mapping(wkt.loads(res["location"]["value"])) for res in result]
         detail["bounds"] = get_largest_bound(detail["location"])
+def get_actor_detail(iri,detail):
+    query = (prefix + actor).format(iri)
+
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+
+    results = sparql.query().convert()
+    result = results["results"]["bindings"]
+    
+    detail["detail"]["name"] = ("Nama", result[0]["label"]["value"])
+    if("dateStart" in result[0]):
+        detail["detail"]["dateStart"] = ("Tanggal mulai", result[0]["dateStart"]["value"])
+    if("dateEnd" in result[0]):
+        detail["detail"]["dateEnd"] = ("Tanggal selesai", result[0]["dateEnd"]["value"])
+    
+    
     
 def get_military_conflict_detail(iri, detail):
     query = (prefix + military_conflict).format(iri)
@@ -162,3 +181,32 @@ def get_military_conflict_detail(iri, detail):
     detail["detail"]["casualties1"] = ("Korban pihak 1", result["casualties1"]["value"] if "casualties1" in result else None)
     detail["detail"]["casualties2"] = ("Korban pihak 2", result["casualties2"]["value"] if "casualties2" in result else None)
     detail["detail"]["causes"] = ("Penyebab", result["causes"]["value"] if "causes" in result else None)
+
+def get_military_person_detail(iri,detail):
+    query = (prefix + military_person).format(iri)
+    print(query)
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+
+    results = sparql.query().convert()
+    result = results["results"]["bindings"][0]
+        
+    multivalued_attr = ["commands","children","battles",'spouse']
+    multivalued_label = ["pasukan", "anak", "Pertempuran",'pasangan']
+
+    for i in range(len(multivalued_attr)):
+        if multivalued_attr[i] in result:
+            detail["detail"][multivalued_attr[i]] = (multivalued_label[i], [
+                (iri[len(base_prefix):], label)
+                for iri, label in zip(result[multivalued_attr[i]]["value"].split(","), result[multivalued_attr[i] + "Label"]["value"].split(","))
+            ])
+    print(result)
+    detail["detail"]["name"] = ("Nama", result["label"]["value"])
+    detail["detail"]["religion"] = ("Agama", result["religion"]["value"] if "religion" in result else None)
+    detail["detail"]["laterwork"] = ("Karya", result["laterwork"]["value"] if "laterwork" in result else None)
+    detail["detail"]["birthname"] = ("nama lahir", result["birthname"]["value"] if "birthname" in result else None)
+    detail["detail"]["awards"] = ("Penghargaan", result["awards"]["value"] if "awards" in result else None)
+    # detail["detail"]["casualties2"] = ("Korban pihak 2", result["casualties2"]["value"] if "casualties2" in result else None)
+    # detail["detail"]["causes"] = ("Penyebab", result["causes"]["value"] if "causes" in result else None)
+
