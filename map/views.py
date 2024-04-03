@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from shapely import wkt
 from shapely.geometry import mapping, shape
 from shapely.ops import unary_union
-from .queries import prefix, get_map, get_all, get_types, event,actor, military_conflict, military_person
+from .queries import prefix, get_map, get_all, get_search,get_types, event,actor, military_conflict, military_person
 
 base_prefix = "http://127.0.0.1:3333/"
 
@@ -37,6 +37,25 @@ def fetch_all_data(request):
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
+    results = sparql.query().convert()
+    
+    data = []
+    
+    for result in results["results"]["bindings"]:
+        data.append({
+            "iri": result["a"]["value"][len(base_prefix):],
+            "name": result["label"]["value"]
+        })
+    
+    return JsonResponse(data, safe=False)
+
+def fetch_search_data(request, search):
+    query = (prefix + get_search).format(search)
+    
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    
     results = sparql.query().convert()
     
     data = []
@@ -102,6 +121,9 @@ def get_event_detail(iri, detail):
 
     results = sparql.query().convert()
     result = results["results"]["bindings"]
+    
+    if result == []:
+        return
     
     detail["detail"]["name"] = ("Nama", result[0]["label"]["value"])
     detail["detail"]["dateStart"] = ("Tanggal mulai", result[0]["dateStart"]["value"])
