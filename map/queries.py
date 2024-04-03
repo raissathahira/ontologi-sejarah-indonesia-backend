@@ -18,6 +18,15 @@ select DISTINCT ?a ?label where {
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
 }"""
 
+get_search = """
+select DISTINCT ?a ?label where {{
+    ?a rdf:type ?type ;
+        rdfs:label ?label ;
+        ?b ?c .
+    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+    FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
+}}"""
+
 get_map = """ 
 select DISTINCT ?event ?label ?lat ?lon ?dateStart ?dateEnd where {
     ?event rdf:type sem:Event ;
