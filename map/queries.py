@@ -9,10 +9,11 @@ prefix sem:   <http://semanticweb.cs.vu.nl/2009/11/sem/>
 prefix time:  <http://www.w3.org/2006/time#> 
 prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
 prefix xsd:   <http://www.w3.org/2001/XMLSchema#> 
+prefix dc:    <http://purl.org/dc/elements/1.1/>
 """
 
 get_all = """
-select DISTINCT ?a ?label where {
+select DISTINCT ?a ?label ?type where {
     ?a rdf:type ?type ;
     rdfs:label ?label .
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
@@ -53,6 +54,54 @@ where {{
     <http://127.0.0.1:3333/{0}> rdf:type ?type .
     ?type rdfs:label ?typeLabel .
 }}
+"""
+
+get_timeline = """
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
+    ?thing rdf:type	sem:{0} ;
+    rdfs:label ?label;
+    :wikiurl ?wikiurl;
+    ?predicate ?summary;
+	FILTER(?predicate IN (:summary, dc:description)).
+    OPTIONAL{{ ?thing :image ?image }}.
+
+      ?thing time:hasTime ?tempEntity .
+      ?tempEntity time:hasBeginning ?inst1 ;
+                  time:hasEnd ?inst2 .
+
+      ?inst1 time:inXSDDate ?firstDate .
+      ?inst2 time:inXSDDate ?secondDate .
+      
+      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI)
+      FILTER regex(str(?label), "{1}", "i") 
+
+    }} ORDER BY ?thing
+"""
+
+get_search_events = """
+select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMPLE(?secondDate) as ?secondDate) ?actorLabel where {{
+    ?event rdf:type sem:Event ;
+        rdfs:label ?label ;
+        :wikiurl ?wikiurl;
+        ?predicate ?summary;
+    	FILTER(?predicate IN (:summary, dc:description)).
+    OPTIONAL{{ ?event :image ?image }}.
+        
+    ?event ?b ?c .
+    
+    FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
+    
+    ?event time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 ;
+                  time:hasEnd ?inst2 .
+
+      ?inst1 time:inXSDDate ?firstDate .
+      ?inst2 time:inXSDDate ?secondDate .
+      
+      BIND(REPLACE(STR(?event), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI)  
+      
+    :{0} rdfs:label ?actorLabel  
+}} GROUP BY ?baseURI ?event ?label ?summary ?wikiurl ?firstDate ?image ?actorLabel
 """
 
 event = """
