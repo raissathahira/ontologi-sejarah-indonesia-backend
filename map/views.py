@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from shapely import wkt
 from shapely.geometry import mapping, shape
 from shapely.ops import unary_union
-from .queries import prefix, get_map, get_all, get_search,get_types, event,actor, military_conflict, military_person
+from .queries import prefix, get_map, get_all, get_search,get_types, event, actor, place, conflict, military_person
 
 base_prefix = "http://127.0.0.1:3333/"
 
@@ -16,16 +16,23 @@ def fetch_map_data(request):
 
     results = sparql.query().convert()
     
-    data = []
+    data = {}
     
     for result in results["results"]["bindings"]:
-        data.append({
+        latitude = float(result["lat"]["value"])
+        longitude = float(result["lon"]["value"])
+        
+        if latitude not in data:
+            data[latitude] = {}
+            
+        if longitude not in data[latitude]:
+            data[latitude][longitude] = []
+        
+        data[latitude][longitude].append({
             "iri": result["event"]["value"][len(base_prefix):],
             "name": result["label"]["value"],
             "yearStart": int(result["dateStart"]["value"][:4]),
-            "yearEnd": int(result["dateEnd"]["value"][:4]),
-            "latitude": float(result["lat"]["value"]),
-            "longitude": float(result["lon"]["value"]),
+            "yearEnd": int(result["dateEnd"]["value"][:4])
         })
     
     return JsonResponse(data, safe=False)
@@ -73,9 +80,10 @@ def fetch_search_data(request, search):
 def get_detail(request, iri):
     type_func = {
         "Event": get_event_detail,
-        "Military Conflict": get_military_conflict_detail,
+        "Conflict": get_conflict_detail,
         "Military Person": get_military_person_detail,
-        "Actor": get_actor_detail
+        "Actor": get_actor_detail,
+        "Feature": get_place_detail
     }
     
     query = (prefix + get_types).format(iri)
@@ -88,6 +96,8 @@ def get_detail(request, iri):
     result = results["results"]["bindings"][0]
     
     types = result["typeLabels"]["value"].split(",")
+    
+    print(types)
     
     detail = {}
     detail["detail"] = {}
@@ -139,6 +149,36 @@ def get_event_detail(iri, detail):
     if "location" in result[0]:
         detail["location"] = [mapping(wkt.loads(res["location"]["value"])) for res in result]
         detail["bounds"] = get_largest_bound(detail["location"])
+        
+
+def get_place_detail(iri, detail):
+    query = (prefix + place).format(iri)
+    
+    print(query)
+    
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    
+    results = sparql.query().convert()
+    result = results["results"]["bindings"]
+    
+    if result == []:
+        return
+    
+    detail["detail"]["name"] = ("Nama", result[0]["label"]["value"])
+    
+    detail["detail"]["coordinate"] = ("Koordinat (dalam lat dan lng)", "(" + result[0]["lat"]["value"] + ", "+ result[0]["lng"]["value"] + ")")
+    
+    detail["detail"]["event"] = ("Daftar peristiwa", [
+        (res["event"]["value"][len(base_prefix):], res["eventLabel"]["value"])
+        for res in result
+    ])
+    
+    detail["location"] = [mapping(wkt.loads(res["location"]["value"])) for res in result]
+    detail["bounds"] = get_largest_bound(detail["location"])
+        
+        
 def get_actor_detail(iri,detail):
     query = (prefix + actor).format(iri)
 
@@ -157,8 +197,8 @@ def get_actor_detail(iri,detail):
     
     
     
-def get_military_conflict_detail(iri, detail):
-    query = (prefix + military_conflict).format(iri)
+def get_conflict_detail(iri, detail):
+    query = (prefix + conflict).format(iri)
     
     sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
@@ -167,20 +207,19 @@ def get_military_conflict_detail(iri, detail):
     results = sparql.query().convert()
     result = results["results"]["bindings"][0]
     
-    multivalued_attr = ["combatants1", "combatants2", "commanders1", "commanders2"]
-    multivalued_label = ["Pihak 1", "Pihak 2", "Pemimpin pihak 1", "Pemimpin pihak 2"]
-
+    multivalued_attr = ["side", "leadfigure"]
+    multivalued_label = ["Pihak terlibat", "Pemimpin pihak terlibat"]
+    
     for i in range(len(multivalued_attr)):
-        if multivalued_attr[i] in result:
+        if result[multivalued_attr[i]]['value']:
             detail["detail"][multivalued_attr[i]] = (multivalued_label[i], [
                 (iri[len(base_prefix):], label)
                 for iri, label in zip(result[multivalued_attr[i]]["value"].split(","), result[multivalued_attr[i] + "Label"]["value"].split(","))
             ])
+        else:
+            detail["detail"][multivalued_attr[i]] = (multivalued_label[i], None)
 
-    detail["detail"]["strength1"] = ("Kekuatan pihak 1", result["strength1"]["value"] if "strength1" in result else None)
-    detail["detail"]["strength2"] = ("Kekuatan pihak 2", result["strength2"]["value"] if "strength2" in result else None)
-    detail["detail"]["casualties1"] = ("Korban pihak 1", result["casualties1"]["value"] if "casualties1" in result else None)
-    detail["detail"]["casualties2"] = ("Korban pihak 2", result["casualties2"]["value"] if "casualties2" in result else None)
+    detail["detail"]["casualties"] = ("Korban", result["casualties"]["value"] if "casualties" in result else None)
     detail["detail"]["causes"] = ("Penyebab", result["causes"]["value"] if "causes" in result else None)
 
 def get_military_person_detail(iri,detail):
