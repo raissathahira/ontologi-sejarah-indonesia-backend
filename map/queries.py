@@ -10,13 +10,14 @@ prefix time:  <http://www.w3.org/2006/time#>
 prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
 prefix xsd:   <http://www.w3.org/2001/XMLSchema#> 
 prefix dc:    <http://purl.org/dc/elements/1.1/>
+prefix geof: <http://www.opengis.net/def/function/geosparql/>
 """
 
 get_all = """
 select DISTINCT ?a ?label ?type where {
     ?a rdf:type ?type ;
     rdfs:label ?label .
-    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place, geo:Feature ))
 }"""
 
 get_search = """
@@ -170,6 +171,33 @@ where {{
 }}
 """
 
+place = """
+select DISTINCT ?label ?event ?eventLabel ?location ?lat ?lng
+
+where {{
+    :{0} rdf:type geo:Feature ;
+        rdfs:label ?label ;
+        geo:hasGeometry ?geometryA .
+    
+    ?geometryA geo:asWKT ?location ;
+        :latitude ?lat ;
+        :longitude ?lng .
+    
+    ?event rdf:type sem:Event ;
+        rdfs:label ?eventLabel ;
+        :location ?feature .
+        
+    ?feature geo:hasGeometry ?geometryB .
+    ?geometryB geo:asWKT ?locationB
+    
+    FILTER(
+        geof:sfContains(?location, ?locationB)
+    )
+    
+}}
+
+"""
+
 actor = """
 select DISTINCT ?label ?dateStart ?dateEnd
 
@@ -191,58 +219,36 @@ where {{
 }}
 """
 
-military_conflict = """
+conflict = """
 select DISTINCT ?result 
-(GROUP_CONCAT(DISTINCT ?combatant1; SEPARATOR=",") AS ?combatants1)
-(GROUP_CONCAT(DISTINCT ?combatant1Label; SEPARATOR=",") AS ?combatants1Label)
-(GROUP_CONCAT(DISTINCT ?combatant2; SEPARATOR=",") AS ?combatants2)
-(GROUP_CONCAT(DISTINCT ?combatant2Label; SEPARATOR=",") AS ?combatants2Label)
-(GROUP_CONCAT(DISTINCT ?commander1; SEPARATOR=",") AS ?commanders1)
-(GROUP_CONCAT(DISTINCT ?commander1Label; SEPARATOR=",") AS ?commanders1Label)
-(GROUP_CONCAT(DISTINCT ?commander2; SEPARATOR=",") AS ?commanders2)
-(GROUP_CONCAT(DISTINCT ?commander2Label; SEPARATOR=",") AS ?commanders2Label)
-?strength1 ?strength2 ?casualties1 ?casualties2 ?causes where {{    
+(GROUP_CONCAT(DISTINCT ?side; SEPARATOR=",") AS ?side)
+(GROUP_CONCAT(DISTINCT ?sideLabel; SEPARATOR=",") AS ?sideLabel)
+(GROUP_CONCAT(DISTINCT ?leadfigure; SEPARATOR=",") AS ?leadfigure)
+(GROUP_CONCAT(DISTINCT ?leadfigureLabel; SEPARATOR=",") AS ?leadfigureLabel)
+?casualties ?causes where {{    
     OPTIONAL {{
         :{0} :result ?result
     }}
     
     OPTIONAL {{
-        :{0} :combatant1 ?combatant1 .
-        ?combatant1 rdfs:label ?combatant1Label
+        :{0} :side ?side .
+        ?side rdfs:label ?sideLabel
     }}
     
     OPTIONAL {{
-        :{0} :combatant2 ?combatant2 .
-        ?combatant2 rdfs:label ?combatant2Label
+        :{0} :leadfigure ?leadfigure .
+        ?leadfigure rdfs:label ?leadfigureLabel
     }}
     
     OPTIONAL {{
-        :{0} :commander1 ?commander1 .
-        ?commander1 rdfs:label ?commander1Label
+        :{0} :casualties ?casualties
     }}
     
     OPTIONAL {{
-        :{0} :commander2 ?commander2 .
-        ?commander2 rdfs:label ?commander2Label
+        :{0} :causes ?causes
     }}
     
-    OPTIONAL {{
-        :{0} :strength1 ?strength1
-    }}
-    
-    OPTIONAL {{
-        :{0} :strength2 ?strength2
-    }}
-    
-    OPTIONAL {{
-        :{0} :casualties1 ?casualties1
-    }}
-    
-    OPTIONAL {{
-        :{0} :casualties2 ?casualties2
-    }}
-    
-}} GROUP BY ?result ?strength1 ?strength2 ?casualties1 ?casualties2 ?causes
+}} GROUP BY ?result ?casualties ?causes
 """
 
 military_person = """
