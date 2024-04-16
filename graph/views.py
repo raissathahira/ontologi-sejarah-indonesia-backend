@@ -8,6 +8,7 @@ from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
+from .queries import prefix,get_data,get_label
  
 common = "http://commons.wikimedia.org/wiki/Special:FilePath/"
 notFound = "default.png"
@@ -91,45 +92,74 @@ def get_image(request,name):
 
 blazegraph_url ="http://localhost:7200/repositories/indonesian-history-ontology"
 
-def template(sourcedata,prefix,name):
-    if(sourcedata=="internal"):
-        source = blazegraph_url
-    elif(sourcedata == 'dbpedia'):
-        source = "https://dbpedia.org/sparql"
-    
+def label(iri):
+    query = (prefix + get_label).format(iri)
     sparql = SPARQLWrapper(
-            source
+            blazegraph_url
             )
-    print(name)
-    sparql.setQuery("""
-                PREFIX dbo: <http://dbpedia.org/ontology/>
-                prefix :    <http://127.0.0.1:3333/> 
-                prefix knoprop: <http://knowledge.com/property#> 
-                prefix owl:   <http://www.w3.org/2002/07/owl#> 
-                prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-                prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> 
-                prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
-                prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
-                prefix resource: <http://dbpedia.org/resource/> 
-                prefix sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
-                select distinct ?p ?label where{ ?s rdfs:label \""""+name+"""\".
-                                              ?s ?p ?o.
-                                              ?o rdfs:label ?label.
-                                              ?p rdfs:range ?r.
-                                              ?r rdfs:subClassOf sem:Core}
-                """
+    print(iri)
+    sparql.setQuery(query
             )
     
     sparql.setReturnFormat(JSON)
     ret = sparql.queryAndConvert()
-    hasil = {}
+    if ret["results"]["bindings"] == []:
+        return ""
+    return ret['results']['bindings'][0]['label']['value']
+def template(sourcedata,iri):
+    if(sourcedata=="internal"):
+        source = blazegraph_url
+    elif(sourcedata == 'dbpedia'):
+        source = "https://dbpedia.org/sparql"
+    query = (prefix + get_data).format(iri)
+    print(query)
+    sparql = SPARQLWrapper(
+            source
+            )
+    print(iri)
+    sparql.setQuery(query
+            )
+    
+    sparql.setReturnFormat(JSON)
+    ret = sparql.queryAndConvert()
+    # hasil = {'property': {
+    #                         'nama_property':{
+    #                                             'value':[{
+    #                                                     'iri':
+    #                                                     'label':
+    #                                                     'detail':
+    #                                                     }]
+    #                                             'status':
+    #                                         }
+    #                     }
+    #          'image':
+    #          'label':}
+
     # print(ret)
+    hasil = {
+        'property':{},
+        'image':"",
+        'label':""
+    }
+    
+    if ret["results"]["bindings"] == []:
+        return hasil
     variable = ret['head']['vars']
     for r in ret["results"]["bindings"]:
-        if(hasil.get(clean(r['p']['value']),-1)==-1):
-            hasil[clean(r['p']['value'])] = [clean(r['label']['value'])]
+        if(hasil['property'].get(clean(r['p']['value']),-1)==-1):
+            hasil['property'][clean(r['p']['value'])] = {'value':[{
+                                                                    'iri':clean(r['o']['value']),
+                                                                    'label':clean(r['olabel']['value']),
+                                                                    'detail':'no detail yet'
+                                                                }],
+                                                         'status':True
+                                                        }
         else :
-            hasil[clean(r['p']['value'])].append(clean(r['label']['value']))
+            hasil['property'][clean(r['p']['value'])]['value'].append({
+                                                                    'iri':clean(r['o']['value']),
+                                                                    'label':clean(r['olabel']['value']),
+                                                                    'detail':'no detail yet'
+                                                                })
         
     return hasil
 
@@ -216,8 +246,10 @@ def uri_page(request):
     # try:
         data = json.loads(request.body)
         # print("label",data['label'])
-        hasil = template("internal",":",data.get("label",""))
-        hasil['image'] = get_image2(data.get("label",""))
+        hasil = template("internal",data.get("iri",""))
+        hasil['label'] = label(data.get("iri",""))
+        hasil['image'] = get_image2(hasil['label'])
+        
         print(hasil['image'])
         return JsonResponse(hasil,safe=False)
     # except Exception as e:
