@@ -71,14 +71,16 @@ where {{
 }}
 """
 
-get_timeline = """
+get_timeline_event = """
 SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
-    ?thing rdf:type	sem:{0} ;
+    ?thing rdf:type	sem:Event ;
     rdfs:label ?label;
-    :wikiurl ?wikiurl;
-    ?predicate ?summary;
-	FILTER(?predicate IN (:summary, dc:description)).
-    OPTIONAL{{ ?thing :image ?image }}.
+    OPTIONAL{{ 
+      ?thing :image ?image .
+      ?thing :wikiurl ?wikiurl .
+      ?thing ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
 
       ?thing time:hasTime ?tempEntity .
       ?tempEntity time:hasBeginning ?inst1 ;
@@ -87,8 +89,48 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
       ?inst1 time:inXSDDate ?firstDate .
       ?inst2 time:inXSDDate ?secondDate .
       
-      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI)
-      FILTER regex(str(?label), "{1}", "i") 
+      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+      FILTER regex(str(?label), "{0}", "i") .
+
+    }} ORDER BY ?thing
+"""
+
+get_timeline_actor = """
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
+    ?thing rdf:type	:Person ;
+    rdfs:label ?label;
+    
+    OPTIONAL{{ 
+      ?thing :image ?image .
+      ?thing :wikiurl ?wikiurl .
+      ?thing ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+
+    BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+    FILTER regex(str(?label), "{0}", "i") .
+
+    }} ORDER BY ?thing
+"""
+
+get_timeline_place = """
+SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?wikiurl ?image WHERE {{
+    ?thing rdf:type	geo:Feature ;
+    rdfs:label ?label;
+    
+    OPTIONAL{{ 
+      ?thing :image ?image .
+      ?thing :wikiurl ?wikiurl .
+      ?thing ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+    
+    ?thing geo:hasGeometry ?geometry .
+    ?geometry :latitude ?latitude;
+        :longitude ?longitude.
+
+    BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+    FILTER regex(str(?label), "{0}", "i") .
 
     }} ORDER BY ?thing
 """
