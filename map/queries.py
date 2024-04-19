@@ -27,7 +27,21 @@ select DISTINCT ?a ?label where {{
         ?b ?c .
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
-}}"""
+}}
+ORDER BY ASC(?label)
+LIMIT 10
+OFFSET {1}
+"""
+
+get_total_search = """
+select (COUNT(DISTINCT ?a) as ?count) where {{
+    ?a rdf:type ?type ;
+        rdfs:label ?label ;
+        ?b ?c .
+    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+    FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
+}}
+"""
 
 get_map = """ 
 select DISTINCT ?event ?label ?lat ?lon ?dateStart ?dateEnd where {
