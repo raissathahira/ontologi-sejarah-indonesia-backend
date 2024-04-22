@@ -7,16 +7,16 @@ from map.queries import prefix, get_timeline_actor, get_timeline_event, get_time
 
 
 def timeline(request):
-    global query
     search = request.GET.get('filter[search]', '')
     role = request.GET.get('filter[role]', '')
+    query = prefix
 
     if role == 'Actor':
-        query = prefix + get_timeline_actor.format(search)
+        query += get_timeline_actor.format(search)
     elif role == 'Event':
-        query = prefix + get_timeline_event.format(search)
-    elif role == 'Place':
-        query = prefix + get_timeline_place.format(search)
+        query += get_timeline_event.format(search)
+    elif role == 'Feature':
+        query += get_timeline_place.format(search)
 
     sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
@@ -86,7 +86,7 @@ def mapping_timeline(role, results):
                 "dummyDate": '2000-01-01',
             })
 
-    elif role == 'Place':
+    elif role == 'Feature':
         for result in results["results"]["bindings"]:
             data.append({
                 "baseURI": result["baseURI"]["value"],

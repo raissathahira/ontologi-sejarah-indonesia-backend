@@ -223,10 +223,10 @@ def get_actor_detail(iri, detail):
     detail["detail"]["name"] = ("Nama", result[0]["label"]["value"])
     if ("dateStart" in result[0]):
         detail["detail"]["dateStart"] = (
-            "Tanggal mulai", result[0]["dateStart"]["value"])
+            "Lahir", result[0]["dateStart"]["value"])
     if ("dateEnd" in result[0]):
         detail["detail"]["dateEnd"] = (
-            "Tanggal selesai", result[0]["dateEnd"]["value"])
+            "Wafat", result[0]["dateEnd"]["value"])
 
 
 def get_conflict_detail(iri, detail):
@@ -309,5 +309,5 @@ def format_date(date):
         11: "November",
         12: "Desember"
     }
-    
+
     return f"{day} {months.get(month)} {year}"
