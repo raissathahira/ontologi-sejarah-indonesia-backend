@@ -191,9 +191,9 @@ def get_actor_detail(iri,detail):
     
     detail["detail"]["name"] = ("Nama", result[0]["label"]["value"])
     if("dateStart" in result[0]):
-        detail["detail"]["dateStart"] = ("Tanggal mulai", result[0]["dateStart"]["value"])
+        detail["detail"]["dateStart"] = ("Lahir", result[0]["dateStart"]["value"])
     if("dateEnd" in result[0]):
-        detail["detail"]["dateEnd"] = ("Tanggal selesai", result[0]["dateEnd"]["value"])
+        detail["detail"]["dateEnd"] = ("Wafat", result[0]["dateEnd"]["value"])
     
     
     

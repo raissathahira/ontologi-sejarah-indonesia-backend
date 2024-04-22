@@ -83,7 +83,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
 
 get_timeline_actor = """
 SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
-    ?thing rdf:type	:Person ;
+    ?thing rdf:type	sem:Actor ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -204,10 +204,12 @@ select DISTINCT ?label ?dateStart ?dateEnd
 where {{
     :{0} rdfs:label ?label .
         
-        
+    optional {{    
     :{0} time:hasTime ?tempEntity .
     ?tempEntity time:hasBeginning ?inst1 ;
     	time:hasEnd ?inst2 .
+    }}
+    
     optional {{
     ?inst1 time:inXSDDate ?dateStart .
     }}
