@@ -21,10 +21,16 @@ select DISTINCT ?a ?label ?type where {
 }"""
 
 get_search = """
-select DISTINCT ?a ?label where {{
+select DISTINCT ?a ?label ?type ?summary where {{
     ?a rdf:type ?type ;
         rdfs:label ?label ;
         ?b ?c .
+        
+    OPTIONAL{{ 
+      ?a ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+    
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
 }}
@@ -77,7 +83,13 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
     rdfs:label ?label;
     OPTIONAL{{ 
       ?thing :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
@@ -102,7 +114,13 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     
     OPTIONAL{{ 
       ?thing :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
@@ -120,7 +138,13 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?wikiurl ?
     
     OPTIONAL{{ 
       ?thing :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
