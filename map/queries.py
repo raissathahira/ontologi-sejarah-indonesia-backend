@@ -83,7 +83,13 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
     rdfs:label ?label;
     OPTIONAL{{ 
       ?thing :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
@@ -108,7 +114,13 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     
     OPTIONAL{{ 
       ?thing :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
@@ -126,7 +138,13 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?wikiurl ?
     
     OPTIONAL{{ 
       ?thing :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
       ?thing ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
