@@ -77,7 +77,9 @@ def fetch_search_data(request, search, page):
     for result in results["results"]["bindings"]:
         data.append({
             "iri": result["a"]["value"][len(base_prefix):],
-            "name": result["label"]["value"]
+            "name": result["label"]["value"],
+            "type": result["type"]["value"],
+            "summary": result.get("summary", {}).get("value", "")
         })
 
     return JsonResponse(data, safe=False)

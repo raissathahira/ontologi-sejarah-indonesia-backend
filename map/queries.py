@@ -21,10 +21,16 @@ select DISTINCT ?a ?label ?type where {
 }"""
 
 get_search = """
-select DISTINCT ?a ?label where {{
+select DISTINCT ?a ?label ?type ?summary where {{
     ?a rdf:type ?type ;
         rdfs:label ?label ;
         ?b ?c .
+        
+    OPTIONAL{{ 
+      ?a ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+    
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
 }}

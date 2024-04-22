@@ -7,7 +7,7 @@ from map.queries import prefix, get_timeline_actor, get_timeline_event, get_time
 
 
 def timeline(request):
-    search = request.GET.get('filter[search]', '')
+    search = request.GET.get('filter[search]', '').replace('(', '\\\(').replace(')', '\\\)')
     role = request.GET.get('filter[role]', '')
     query = prefix
 
