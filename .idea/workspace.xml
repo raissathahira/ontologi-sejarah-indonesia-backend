@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="add type and label on search page">
-      <change beforePath="$PROJECT_DIR$/map/queries.py" beforeDir="false" afterPath="$PROJECT_DIR$/map/queries.py" afterDir="false" />
-    </list>
+    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="add query for homepage" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -27,6 +25,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="ProjectId" id="2dbcEnNqORbV4ZPih3ueMqjlP4v" />
   <component name="ProjectLevelVcsManager">
@@ -90,7 +89,9 @@
     <MESSAGE value="add changes for add person on timeline" />
     <MESSAGE value="restructuring timeline frontend" />
     <MESSAGE value="add type and label on search page" />
-    <option name="LAST_COMMIT_MESSAGE" value="add type and label on search page" />
+    <MESSAGE value="solve query bug on timeline" />
+    <MESSAGE value="add query for homepage" />
+    <option name="LAST_COMMIT_MESSAGE" value="add query for homepage" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
