@@ -53,7 +53,7 @@ def show_events(request):
             "summary": re.sub(r'\n', '<br>', result["summary"]["value"]),
             "wikiurl": result["wikiurl"]["value"],
             "image": result["image"]["value"] if result.get("image", {}).get(
-                "value") else 'Indonesia flag raising witnesses 17 August 1945.jpg',
+                "value") else 'No image available.svg',
             "name": result["label"]["value"],
             "firstDate": result["firstDate"]["value"],
             "secondDate": result["secondDate"]["value"],
@@ -116,7 +116,7 @@ def mapping_timeline(role, results):
                 "summary": result["summary"]["value"] if result.get("summary", {}).get("value") else '',
                 "wikiurl": result["wikiurl"]["value"] if result.get("wikiurl", {}).get("value") else '',
                 "image": result["image"]["value"] if result.get("image", {}).get(
-                    "value") else 'Indonesia flag raising witnesses 17 August 1945.jpg',
+                    "value") else 'No image available.svg',
                 "name": result["label"]["value"],
                 "firstDate": result["firstDate"]["value"],
                 "secondDate": result["secondDate"]["value"],
@@ -131,7 +131,7 @@ def mapping_timeline(role, results):
                 "summary": result["summary"]["value"] if result.get("summary", {}).get("value") else '',
                 "wikiurl": result["wikiurl"]["value"] if result.get("wikiurl", {}).get("value") else '',
                 "image": result["image"]["value"] if result.get("image", {}).get(
-                    "value") else 'Indonesia flag raising witnesses 17 August 1945.jpg',
+                    "value") else 'No image available.svg',
                 "name": result["label"]["value"],
                 "dummyDate": '2000-01-01',
                 "typeLabel": "Actor"
@@ -146,7 +146,7 @@ def mapping_timeline(role, results):
                 "summary": result["summary"]["value"] if result.get("summary", {}).get("value") else '',
                 "wikiurl": result["wikiurl"]["value"] if result.get("wikiurl", {}).get("value") else '',
                 "image": result["image"]["value"] if result.get("image", {}).get(
-                    "value") else 'Indonesia flag raising witnesses 17 August 1945.jpg',
+                    "value") else 'No image available.svg',
                 "name": result["label"]["value"],
                 "latitude": result["latitude"]["value"],
                 "longitude": result["longitude"]["value"],
