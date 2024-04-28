@@ -2,10 +2,13 @@ import re
 
 from SPARQLWrapper import SPARQLWrapper, JSON
 from django.http import JsonResponse
+from shapely import wkt
+from shapely.geometry import mapping
 
 from map.queries import prefix, get_timeline_actor, get_timeline_event, get_timeline_place, get_search_events, \
     get_timeline_event_homepage, get_timeline_actor_homepage, get_timeline_place_homepage
 
+from map.views import get_largest_bound
 
 def timeline(request):
     search = request.GET.get('filter[search]', '').replace('(', '\\\(').replace(')', '\\\)')
@@ -136,6 +139,7 @@ def mapping_timeline(role, results):
 
     elif role == 'Feature':
         for result in results["results"]["bindings"]:
+            location = [mapping(wkt.loads(result["location"]["value"]))] if "location" in result else None
             data.append({
                 "baseURI": result["baseURI"]["value"],
                 "thing": result["thing"]["value"].replace((result["baseURI"]["value"]), ""),
@@ -146,6 +150,8 @@ def mapping_timeline(role, results):
                 "name": result["label"]["value"],
                 "latitude": result["latitude"]["value"],
                 "longitude": result["longitude"]["value"],
+                "location": location,
+                "bounds": get_largest_bound(location) if location else None,
                 "dummyDate": '2000-01-01',
                 "typeLabel": "Feature"
             })
