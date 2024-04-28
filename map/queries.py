@@ -346,18 +346,10 @@ get_timeline_event_homepage = """
 SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
     ?thing rdf:type	sem:Event ;
     rdfs:label ?label;
-    OPTIONAL{{ 
-      ?thing :image ?image .
-    }}.
-    
-    OPTIONAL{{ 
-      ?thing :wikiurl ?wikiurl .
-    }}.
-    
-    OPTIONAL{{ 
-      ?thing ?predicate ?summary ;
+    :image ?image;
+    :wikiurl ?wikiurl; 
+    ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
-    }}.
 
       ?thing time:hasTime ?tempEntity .
       ?tempEntity time:hasBeginning ?inst1 ;
@@ -375,19 +367,10 @@ get_timeline_actor_homepage = """
 SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     ?thing rdf:type	sem:Actor ;
     rdfs:label ?label;
-    
-    OPTIONAL{{ 
-      ?thing :image ?image .
-    }}.
-    
-    OPTIONAL{{ 
-      ?thing :wikiurl ?wikiurl .
-    }}.
-    
-    OPTIONAL{{ 
-      ?thing ?predicate ?summary ;
+    :image ?image;
+    :wikiurl ?wikiurl; 
+    ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
-    }}.
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
 
@@ -395,29 +378,18 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
 """
 
 get_timeline_place_homepage = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?wikiurl ?image ?location WHERE {{
-    ?thing rdf:type	geo:Feature ;
-    rdfs:label ?label;
-    
-    OPTIONAL{{ 
-      ?thing :image ?image .
-    }}.
-    
-    OPTIONAL{{ 
-      ?thing :wikiurl ?wikiurl .
-    }}.
-    
-    OPTIONAL{{ 
-      ?thing ?predicate ?summary ;
-	    FILTER(?predicate IN (:summary, dc:description)).
-    }}.
-    
+SELECT ?baseURI ?thing (SAMPLE(?latitude) AS ?latitude) (SAMPLE(?label) AS ?label) (SAMPLE(?longitude) AS ?longitude) (SAMPLE(?location) AS ?location) WHERE {
+    ?thing rdf:type geo:Feature ;
+           rdfs:label ?label.
+
     ?thing geo:hasGeometry ?geometry .
-    ?geometry :latitude ?latitude;
-        :longitude ?longitude;
-        geo:asWKT ?location
+    ?geometry :latitude ?latitude ;
+              :longitude ?longitude ;
+              geo:asWKT ?location .
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-
-    }} ORDER BY ?thing LIMIT 3
+}
+GROUP BY ?baseURI ?thing
+ORDER BY ?thing
+LIMIT 3
 """

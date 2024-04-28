@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="add query for homepage" />
+    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="add query for homepage">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/map/queries.py" beforeDir="false" afterPath="$PROJECT_DIR$/map/queries.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
