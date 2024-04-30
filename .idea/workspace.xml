@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="add query for homepage" />
+    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="change summary query on homepage actor and event; handling query on homepage place">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/timeline/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/timeline/views.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -70,7 +73,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="HEAD" />
+                        <option value="origin/feature/be-timeline" />
                       </list>
                     </value>
                   </entry>
@@ -91,7 +94,8 @@
     <MESSAGE value="add type and label on search page" />
     <MESSAGE value="solve query bug on timeline" />
     <MESSAGE value="add query for homepage" />
-    <option name="LAST_COMMIT_MESSAGE" value="add query for homepage" />
+    <MESSAGE value="change summary query on homepage actor and event; handling query on homepage place" />
+    <option name="LAST_COMMIT_MESSAGE" value="change summary query on homepage actor and event; handling query on homepage place" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
