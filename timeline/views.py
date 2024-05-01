@@ -73,6 +73,8 @@ def homepage_actor(request):
     results = sparql.query().convert()
 
     data = mapping_timeline('Actor', results)
+    
+    print(data)
 
     return JsonResponse(data, safe=False)
 
@@ -87,6 +89,8 @@ def homepage_event(request):
     results = sparql.query().convert()
 
     data = mapping_timeline('Event', results)
+    
+    print(data)
 
     return JsonResponse(data, safe=False)
 

@@ -213,6 +213,8 @@ def get_place_detail(iri, detail):
 
 def get_actor_detail(iri, detail):
     query = (prefix + actor).format(iri)
+    
+    print(query)
 
     sparql = SPARQLWrapper(
         "http://localhost:7200/repositories/indonesian-history-ontology")
@@ -220,15 +222,34 @@ def get_actor_detail(iri, detail):
     sparql.setReturnFormat(JSON)
 
     results = sparql.query().convert()
-    result = results["results"]["bindings"]
+    result = results["results"]["bindings"][0]
+    
+    print(result)
 
-    detail["detail"]["name"] = ("Nama", result[0]["label"]["value"])
-    if ("dateStart" in result[0]):
-        detail["detail"]["dateStart"] = (
-            "Lahir", result[0]["dateStart"]["value"])
-    if ("dateEnd" in result[0]):
+    detail["detail"]["name"] = ("Nama", result["label"]["value"])
+    
+    detail["detail"]["dateStart"] = (
+            "Lahir", format_date(result["dateStart"]["value"]) if "dateStart" in result else None)
+    
+    if ("dateEnd" in result):
         detail["detail"]["dateEnd"] = (
-            "Wafat", result[0]["dateEnd"]["value"])
+            "Wafat", format_date(result["dateEnd"]["value"]))
+        
+    detail["detail"]["religion"] = (
+        "Agama", result["religion"]["value"] if "religion" in result else None)
+    
+    multivalued_attr = ["parent", "spouse", "children", "relative", "event"]
+    multivalued_label = ["Orang tua", "Pasangan", "Anak", "Kerabat", "Terlibat dalam"]
+    
+    for i in range(len(multivalued_attr)):
+        if result[multivalued_attr[i]]['value']:
+            detail["detail"][multivalued_attr[i]] = (multivalued_label[i], [
+                (iri[len(base_prefix):], label)
+                for iri, label in zip(result[multivalued_attr[i]]["value"].split(","), result[multivalued_attr[i] + "Label"]["value"].split(","))
+            ])
+        else:
+            detail["detail"][multivalued_attr[i]] = (
+                multivalued_label[i], None)
 
 
 def get_conflict_detail(iri, detail):
@@ -263,7 +284,7 @@ def get_conflict_detail(iri, detail):
 
 def get_military_person_detail(iri, detail):
     query = (prefix + military_person).format(iri)
-    print(query)
+    
     sparql = SPARQLWrapper(
         "http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
@@ -272,8 +293,8 @@ def get_military_person_detail(iri, detail):
     results = sparql.query().convert()
     result = results["results"]["bindings"][0]
 
-    multivalued_attr = ["commands", "children", "battles", 'spouse']
-    multivalued_label = ["pasukan", "anak", "Pertempuran", 'pasangan']
+    multivalued_attr = ["commands", "battles"]
+    multivalued_label = ["pasukan", "Pertempuran"]
 
     for i in range(len(multivalued_attr)):
         if multivalued_attr[i] in result:
@@ -281,10 +302,8 @@ def get_military_person_detail(iri, detail):
                 (iri[len(base_prefix):], label)
                 for iri, label in zip(result[multivalued_attr[i]]["value"].split(","), result[multivalued_attr[i] + "Label"]["value"].split(","))
             ])
-    print(result)
+            
     detail["detail"]["name"] = ("Nama", result["label"]["value"])
-    detail["detail"]["religion"] = (
-        "Agama", result["religion"]["value"] if "religion" in result else None)
     detail["detail"]["laterwork"] = (
         "Karya", result["laterwork"]["value"] if "laterwork" in result else None)
     detail["detail"]["birthname"] = (
