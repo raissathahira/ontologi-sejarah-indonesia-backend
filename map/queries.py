@@ -237,26 +237,57 @@ where {{
 """
 
 actor = """
-select DISTINCT ?label ?dateStart ?dateEnd
-
+select DISTINCT ?label ?religion ?dateStart ?dateEnd ?birthname
+(GROUP_CONCAT(DISTINCT ?spouse; SEPARATOR=",") AS ?spouse)
+(GROUP_CONCAT(DISTINCT ?spouseLabel; SEPARATOR=",") AS ?spouseLabel)
+(GROUP_CONCAT(DISTINCT ?parent; SEPARATOR=",") AS ?parent)
+(GROUP_CONCAT(DISTINCT ?parentLabel; SEPARATOR=",") AS ?parentLabel)
+(GROUP_CONCAT(DISTINCT ?children; SEPARATOR=",") AS ?children)
+(GROUP_CONCAT(DISTINCT ?childrenLabel; SEPARATOR=",") AS ?childrenLabel)
+(GROUP_CONCAT(DISTINCT ?relative; SEPARATOR=",") AS ?relative)
+(GROUP_CONCAT(DISTINCT ?relativeLabel; SEPARATOR=",") AS ?relativeLabel)
+(GROUP_CONCAT(DISTINCT ?event; SEPARATOR=",") AS ?event)
+(GROUP_CONCAT(DISTINCT ?eventLabel; SEPARATOR=",") AS ?eventLabel)
 where {{
     :{0} rdfs:label ?label .
+    
+    OPTIONAL {{
+        :{0} :religion ?religion .
         
+    }}
+    
+    OPTIONAL {{
+        :{0} :birthName ?birthname .
+    }}
+
     optional {{    
     :{0} time:hasTime ?tempEntity .
     ?tempEntity time:hasBeginning ?inst1 ;
     	time:hasEnd ?inst2 .
+     ?inst1 time:inXSDDate ?dateStart .
+     ?inst2 time:inXSDDate ?dateEnd .
     }}
     
-    optional {{
-    ?inst1 time:inXSDDate ?dateStart .
+    OPTIONAL {{
+        :{0} :spouse ?spouse .
+        ?spouse rdfs:label ?spouseLabel
     }}
-    optional {{
-    ?inst2 time:inXSDDate ?dateEnd .
+    OPTIONAL {{
+        :{0} :children ?children .
+        ?children rdfs:label ?childrenLabel
+    }}
+    OPTIONAL {{
+        :{0} :relative ?relative .
+        ?relative rdfs:label ?relativeLabel
     }}
     
+    OPTIONAL {{
+        :{0} :isActorOf ?event .
+        ?event rdf:type sem:Event ;
+            rdfs:label ?eventLabel .
+    }}
     
-}}
+}} GROUP BY ?label ?religion ?dateStart ?dateEnd ?birthname
 """
 
 conflict = """
@@ -295,19 +326,12 @@ military_person = """
 select DISTINCT 
 (GROUP_CONCAT(DISTINCT ?commands; SEPARATOR=",") AS ?commands)
 (GROUP_CONCAT(DISTINCT ?commandsLabel; SEPARATOR=",") AS ?commandsLabel)
-(GROUP_CONCAT(DISTINCT ?children; SEPARATOR=",") AS ?children)
-(GROUP_CONCAT(DISTINCT ?childrenLabel; SEPARATOR=",") AS ?childrenLabel)
 (GROUP_CONCAT(DISTINCT ?battles; SEPARATOR=",") AS ?battles)
 (GROUP_CONCAT(DISTINCT ?battlesLabel; SEPARATOR=",") AS ?battlesLabel)
-(GROUP_CONCAT(DISTINCT ?spouse; SEPARATOR=",") AS ?spouse)
-(GROUP_CONCAT(DISTINCT ?spouseLabel; SEPARATOR=",") AS ?spouseLabel)
 (GROUP_CONCAT(DISTINCT ?awards; SEPARATOR=",") AS ?awards)
-?label ?religion ?laterwork ?birthname where {{    
+?label ?religion ?laterwork where {{    
     :{0} rdfs:label ?label
-    OPTIONAL {{
-        :{0} :religion ?religion 
-        
-    }}
+    
     OPTIONAL {{
         :{0} :laterwork ?laterwork 
         
@@ -324,14 +348,6 @@ select DISTINCT
         :{0} :commands ?commands .
         ?commands rdfs:label ?commandsLabel
     }}
-    OPTIONAL {{
-        :{0} :spouse ?spouse .
-        ?spouse rdfs:label ?spouseLabel
-    }}
-    OPTIONAL {{
-        :{0} :children ?children .
-        ?children rdfs:label ?childrenLabel
-    }}
     
     OPTIONAL {{
         :{0} :battles ?battles .
@@ -339,7 +355,7 @@ select DISTINCT
     }}
     
     
-}} GROUP BY ?label ?religion ?birthname ?laterwork
+}} GROUP BY ?label ?religion ?laterwork
 """
 
 get_timeline_event_homepage = """
