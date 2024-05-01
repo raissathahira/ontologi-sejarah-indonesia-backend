@@ -150,7 +150,7 @@ def template(sourcedata,iri):
             hasil['property'][clean(r['p']['value'])] = {'value':[{
                                                                     'iri':clean(r['o']['value']),
                                                                     'label':clean(r['olabel']['value']),
-                                                                    'detail':'no detail yet'
+                                                                    'detail':clean(r['plabel']['value'])
                                                                 }],
                                                          'status':True
                                                         }
@@ -158,7 +158,7 @@ def template(sourcedata,iri):
             hasil['property'][clean(r['p']['value'])]['value'].append({
                                                                     'iri':clean(r['o']['value']),
                                                                     'label':clean(r['olabel']['value']),
-                                                                    'detail':'no detail yet'
+                                                                    'detail':clean(r['plabel']['value'])
                                                                 })
         
     return hasil
@@ -255,4 +255,9 @@ def uri_page(request):
     # except Exception as e:
 def event(request):
     return JsonResponse(template2("internal",":"),safe=False)
+
+def tes(request):
+    print(request.headers)
+    # print(request.META)
+    return JsonResponse({'ok':'ok'})
          

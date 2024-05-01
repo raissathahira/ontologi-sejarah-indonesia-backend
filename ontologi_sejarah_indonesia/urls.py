@@ -19,7 +19,8 @@ from django.urls import path,include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('graph/',include(('graph.urls'))),
-    path('map/', include('map.urls')),
-    path('timeline/', include('timeline.urls'))
+    path('api/graph/',include(('graph.urls'))),
+    path('api/map/', include('map.urls')),
+    path('api/timeline/', include('timeline.urls')),
+    
 ]
