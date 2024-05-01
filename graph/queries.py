@@ -12,10 +12,11 @@ prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
 prefix dc:    <http://purl.org/dc/elements/1.1/>
 """
 get_data = """
-select DISTINCT ?p ?o ?olabel where {{
+select DISTINCT ?p ?o ?olabel ?plabel where {{
     :{0} ?p ?o .
     ?p rdfs:range ?type.
     ?o rdfs:label ?olabel .
+    ?p rdfs:label ?plabel.
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
 }}"""
 
