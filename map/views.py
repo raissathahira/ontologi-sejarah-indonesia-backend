@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from shapely import wkt
 from shapely.geometry import mapping, shape
 from shapely.ops import unary_union
-from .queries import prefix, get_map, get_all, get_search, get_total_search, get_types, event, actor, place, conflict, military_person
+from .queries import prefix, get_map, get_all, get_search, get_total_search, get_types, event, actor, person, place, conflict, military_person
 
 base_prefix = "http://127.0.0.1:3333/"
 
@@ -106,7 +106,8 @@ def get_detail(request, iri):
         "Conflict": get_conflict_detail,
         "Military Person": get_military_person_detail,
         "Actor": get_actor_detail,
-        "Feature": get_place_detail
+        "Feature": get_place_detail,
+        "Person": get_person_detail,
     }
 
     query = (prefix + get_types).format(iri)
@@ -120,8 +121,6 @@ def get_detail(request, iri):
     result = results["results"]["bindings"][0]
 
     types = result["typeLabels"]["value"].split(",")
-
-    print(types)
 
     detail = {}
     detail["detail"] = {}
@@ -183,8 +182,6 @@ def get_event_detail(iri, detail):
 def get_place_detail(iri, detail):
     query = (prefix + place).format(iri)
 
-    print(query)
-
     sparql = SPARQLWrapper(
         "http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
@@ -213,8 +210,6 @@ def get_place_detail(iri, detail):
 
 def get_actor_detail(iri, detail):
     query = (prefix + actor).format(iri)
-    
-    print(query)
 
     sparql = SPARQLWrapper(
         "http://localhost:7200/repositories/indonesian-history-ontology")
@@ -223,10 +218,20 @@ def get_actor_detail(iri, detail):
 
     results = sparql.query().convert()
     result = results["results"]["bindings"][0]
-    
-    print(result)
 
+    detail["image"] = result["image"]["value"] if "image" in result else None
     detail["detail"]["name"] = ("Nama", result["label"]["value"])
+            
+def get_person_detail(iri, detail):
+    query = (prefix + person).format(iri)
+
+    sparql = SPARQLWrapper(
+        "http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+
+    results = sparql.query().convert()
+    result = results["results"]["bindings"][0]
     
     detail["detail"]["dateStart"] = (
             "Lahir", format_date(result["dateStart"]["value"]) if "dateStart" in result else None)
@@ -310,8 +315,6 @@ def get_military_person_detail(iri, detail):
         "nama lahir", result["birthname"]["value"] if "birthname" in result else None)
     detail["detail"]["awards"] = (
         "Penghargaan", result["awards"]["value"] if "awards" in result else None)
-    # detail["detail"]["casualties2"] = ("Korban pihak 2", result["casualties2"]["value"] if "casualties2" in result else None)
-    # detail["detail"]["causes"] = ("Penyebab", result["causes"]["value"] if "causes" in result else None)
 
 def format_date(date):
     year, month, day = map(int, date.split("-"))

@@ -237,7 +237,27 @@ where {{
 """
 
 actor = """
-select DISTINCT ?label ?religion ?dateStart ?dateEnd ?birthname
+select DISTINCT ?label ?image
+(GROUP_CONCAT(DISTINCT ?event; SEPARATOR=",") AS ?event)
+(GROUP_CONCAT(DISTINCT ?eventLabel; SEPARATOR=",") AS ?eventLabel)
+where {{
+    :{0} rdfs:label ?label .
+    
+    OPTIONAL {{
+        :{0} :image ?image .
+    }}
+    
+    OPTIONAL {{
+        :{0} :isActorOf ?event .
+        ?event rdf:type sem:Event ;
+            rdfs:label ?eventLabel .
+    }}
+    
+}} GROUP BY ?label ?image
+"""
+
+person = """
+select DISTINCT ?religion ?dateStart ?dateEnd ?birthname
 (GROUP_CONCAT(DISTINCT ?spouse; SEPARATOR=",") AS ?spouse)
 (GROUP_CONCAT(DISTINCT ?spouseLabel; SEPARATOR=",") AS ?spouseLabel)
 (GROUP_CONCAT(DISTINCT ?parent; SEPARATOR=",") AS ?parent)
@@ -249,8 +269,6 @@ select DISTINCT ?label ?religion ?dateStart ?dateEnd ?birthname
 (GROUP_CONCAT(DISTINCT ?event; SEPARATOR=",") AS ?event)
 (GROUP_CONCAT(DISTINCT ?eventLabel; SEPARATOR=",") AS ?eventLabel)
 where {{
-    :{0} rdfs:label ?label .
-    
     OPTIONAL {{
         :{0} :religion ?religion .
         
@@ -287,7 +305,7 @@ where {{
             rdfs:label ?eventLabel .
     }}
     
-}} GROUP BY ?label ?religion ?dateStart ?dateEnd ?birthname
+}} GROUP BY ?religion ?dateStart ?dateEnd ?birthname
 """
 
 conflict = """
