@@ -157,25 +157,33 @@ def get_event_detail(iri, detail):
     sparql.setReturnFormat(JSON)
 
     results = sparql.query().convert()
-    result = results["results"]["bindings"]
+    result = results["results"]["bindings"][0]
 
     if result == []:
         return
 
-    detail["detail"]["name"] = ("Nama", result[0]["label"]["value"])
+    detail["detail"]["name"] = ("Nama", result["label"]["value"])
     detail["detail"]["dateStart"] = (
-        "Tanggal mulai", format_date(result[0]["dateStart"]["value"]))
+        "Tanggal mulai", format_date(result["dateStart"]["value"]))
     detail["detail"]["dateEnd"] = (
-        "Tanggal selesai", format_date(result[0]["dateEnd"]["value"]))
+        "Tanggal selesai", format_date(result["dateEnd"]["value"]))
 
-    detail["detail"]["feature"] = ("Tempat kejadian", [
-        (res["feature"]["value"][len(base_prefix):], res["featureLabel"]["value"])
-        for res in result
-    ])
+    multivalued_attr = ["actor", "person", "feature"]
+    multivalued_label = ["Pihak terlibat", "Tokoh terlibat", "Lokasi kejadian"]
+    
+    for i in range(len(multivalued_attr)):
+        if result[multivalued_attr[i]]['value']:
+            detail["detail"][multivalued_attr[i]] = (multivalued_label[i], [
+                (iri[len(base_prefix):], label)
+                for iri, label in zip(result[multivalued_attr[i]]["value"].split(","), result[multivalued_attr[i] + "Label"]["value"].split(","))
+            ])
+        else:
+            detail["detail"][multivalued_attr[i]] = (
+                multivalued_label[i], None)
 
-    if "location" in result[0]:
+    if "location" in result:
         detail["location"] = [
-            mapping(wkt.loads(res["location"]["value"])) for res in result]
+            mapping(wkt.loads(location)) for location in result["location"]["value"].split("|")]
         detail["bounds"] = get_largest_bound(detail["location"])
 
 
@@ -268,8 +276,8 @@ def get_conflict_detail(iri, detail):
     results = sparql.query().convert()
     result = results["results"]["bindings"][0]
 
-    multivalued_attr = ["side", "leadfigure"]
-    multivalued_label = ["Pihak terlibat", "Pemimpin pihak terlibat"]
+    multivalued_attr = []
+    multivalued_label = []
 
     for i in range(len(multivalued_attr)):
         if result[multivalued_attr[i]]['value']:
