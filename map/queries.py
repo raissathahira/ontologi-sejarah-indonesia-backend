@@ -215,8 +215,14 @@ select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMP
 """
 
 event = """
-select DISTINCT ?label ?dateStart ?dateEnd ?location ?feature ?featureLabel
-
+select DISTINCT ?label ?dateStart ?dateEnd
+(GROUP_CONCAT(DISTINCT ?location; SEPARATOR="|") AS ?location)
+(GROUP_CONCAT(DISTINCT ?actor; SEPARATOR=",") AS ?actor)
+(GROUP_CONCAT(DISTINCT ?actorLabel; SEPARATOR=",") AS ?actorLabel)
+(GROUP_CONCAT(DISTINCT ?person; SEPARATOR=",") AS ?person)
+(GROUP_CONCAT(DISTINCT ?personLabel; SEPARATOR=",") AS ?personLabel)
+(GROUP_CONCAT(DISTINCT ?feature; SEPARATOR=",") AS ?feature)
+(GROUP_CONCAT(DISTINCT ?featureLabel; SEPARATOR=",") AS ?featureLabel)
 where {{
     :{0} rdfs:label ?label ;
         :location ?feature .
@@ -232,10 +238,22 @@ where {{
     
     OPTIONAL {{ 
         ?feature geo:hasGeometry ?geometry .
-    
         ?geometry geo:asWKT ?location .
     }}
-}}
+    
+    OPTIONAL {{
+        :{0} sem:hasActor ?actor .
+        ?actor rdfs:label ?actorLabel .  
+    }}
+    
+    MINUS {{ ?actor rdf:type foaf:Person }}
+    
+    OPTIONAL {{
+        :{0} sem:hasActor ?person .
+        ?person rdfs:label ?personLabel ;
+            rdf:type foaf:Person .
+    }}
+}} GROUP BY ?label ?dateStart ?dateEnd
 """
 
 place = """
@@ -338,24 +356,9 @@ where {{
 """
 
 conflict = """
-select DISTINCT ?result 
-(GROUP_CONCAT(DISTINCT ?side; SEPARATOR=",") AS ?side)
-(GROUP_CONCAT(DISTINCT ?sideLabel; SEPARATOR=",") AS ?sideLabel)
-(GROUP_CONCAT(DISTINCT ?leadfigure; SEPARATOR=",") AS ?leadfigure)
-(GROUP_CONCAT(DISTINCT ?leadfigureLabel; SEPARATOR=",") AS ?leadfigureLabel)
-?casualties ?causes where {{    
+select DISTINCT ?result ?casualties ?causes where {{    
     OPTIONAL {{
         :{0} :result ?result
-    }}
-    
-    OPTIONAL {{
-        :{0} :side ?side .
-        ?side rdfs:label ?sideLabel
-    }}
-    
-    OPTIONAL {{
-        :{0} :leadfigure ?leadfigure .
-        ?leadfigure rdfs:label ?leadfigureLabel
     }}
     
     OPTIONAL {{
@@ -365,8 +368,7 @@ select DISTINCT ?result
     OPTIONAL {{
         :{0} :causes ?causes
     }}
-    
-}} GROUP BY ?result ?casualties ?causes
+}}
 """
 
 military_person = """
