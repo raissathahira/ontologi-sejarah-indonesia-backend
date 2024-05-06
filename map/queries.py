@@ -107,6 +107,32 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
     }} ORDER BY ?thing
 """
 
+get_timeline_navbar = """
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
+    ?thing rdf:type	sem:Event ;
+    rdfs:label ?label;
+    OPTIONAL{{ 
+      ?thing :image ?image .
+    }}.
+    
+    ?thing :wikiurl ?wikiurl .
+    
+    ?thing ?predicate ?summary ;
+	FILTER(?predicate IN (:summary, dc:description)).
+
+      ?thing time:hasTime ?tempEntity .
+      ?tempEntity time:hasBeginning ?inst1 ;
+                  time:hasEnd ?inst2 .
+
+      ?inst1 time:inXSDDate ?firstDate .
+      ?inst2 time:inXSDDate ?secondDate .
+      
+      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+      FILTER regex(str(?label), "{0}", "i") .
+
+    }} ORDER BY ?thing LIMIT 30
+"""
+
 get_timeline_actor = """
 SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     ?thing rdf:type	sem:Actor ;
@@ -132,7 +158,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
 """
 
 get_timeline_place = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?wikiurl ?image WHERE {{
+SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{
     ?thing rdf:type	geo:Feature ;
     rdfs:label ?label;
     
@@ -149,9 +175,12 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?wikiurl ?
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
     
-    ?thing geo:hasGeometry ?geometry .
-    ?geometry :latitude ?latitude;
-        :longitude ?longitude.
+    OPTIONAL{{ 
+      ?thing geo:hasGeometry ?geometry .
+      ?geometry :latitude ?latitude ;
+              :longitude ?longitude ;
+               geo:asWKT ?location
+    }}.
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
     FILTER regex(str(?label), "{0}", "i") .
