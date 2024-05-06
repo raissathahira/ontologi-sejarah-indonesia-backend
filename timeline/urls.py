@@ -1,6 +1,6 @@
 from django.urls import path
 
-from timeline.views import timeline, show_events, homepage_actor, homepage_event, homepage_place
+from timeline.views import timeline, show_events, homepage_actor, homepage_event, homepage_place, timeline_navbar
 
 app_name = 'timeline'
 
@@ -10,5 +10,5 @@ urlpatterns = [
     path('homepage/actor/', homepage_actor),
     path('homepage/event/', homepage_event),
     path('homepage/place/', homepage_place),
-
+    path('navbar/', timeline_navbar),
 ]

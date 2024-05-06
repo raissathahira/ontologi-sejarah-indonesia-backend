@@ -6,7 +6,7 @@ from shapely import wkt
 from shapely.geometry import mapping
 
 from map.queries import prefix, get_timeline_actor, get_timeline_event, get_timeline_place, get_search_events, \
-    get_timeline_event_homepage, get_timeline_actor_homepage, get_timeline_place_homepage
+    get_timeline_event_homepage, get_timeline_actor_homepage, get_timeline_place_homepage, get_timeline_navbar
 
 from map.views import get_largest_bound
 
@@ -105,6 +105,20 @@ def homepage_place(request):
     results = sparql.query().convert()
 
     data = mapping_timeline('Feature', results)
+
+    return JsonResponse(data, safe=False)
+
+def timeline_navbar(request):
+
+    query = prefix + get_timeline_navbar
+
+    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+
+    results = sparql.query().convert()
+
+    data = mapping_timeline('Event', results)
 
     return JsonResponse(data, safe=False)
 
