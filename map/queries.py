@@ -158,7 +158,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
 """
 
 get_timeline_place = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?wikiurl ?image WHERE {{
+SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{
     ?thing rdf:type	geo:Feature ;
     rdfs:label ?label;
     
@@ -177,8 +177,9 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?wikiurl ?
     
     OPTIONAL{{ 
       ?thing geo:hasGeometry ?geometry .
-      ?geometry :latitude ?latitude;
-                :longitude ?longitude.
+      ?geometry :latitude ?latitude ;
+              :longitude ?longitude ;
+               geo:asWKT ?location
     }}.
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
