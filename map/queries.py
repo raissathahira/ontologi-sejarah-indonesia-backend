@@ -53,7 +53,7 @@ get_map = """
 select DISTINCT ?event ?label ?lat ?lon ?dateStart ?dateEnd where {
     ?event rdf:type sem:Event ;
     	rdfs:label ?label ;
-    	:location ?feature .
+    	:hasLocation ?feature .
     
     ?feature geo:hasGeometry ?geometry .
     ?geometry :latitude ?lat ;
@@ -225,7 +225,7 @@ select DISTINCT ?label ?dateStart ?dateEnd
 (GROUP_CONCAT(DISTINCT ?featureLabel; SEPARATOR=",") AS ?featureLabel)
 where {{
     :{0} rdfs:label ?label ;
-        :location ?feature .
+        :hasLocation ?feature .
         
     :{0} time:hasTime ?tempEntity .
     ?tempEntity time:hasBeginning ?inst1 ;
@@ -270,7 +270,7 @@ where {{
     
     ?event rdf:type sem:Event ;
         rdfs:label ?eventLabel ;
-        :location ?feature .
+        :hasLocation ?feature .
         
     ?feature geo:hasGeometry ?geometryB .
     ?geometryB geo:asWKT ?locationB
@@ -338,11 +338,11 @@ where {{
         ?spouse rdfs:label ?spouseLabel
     }}
     OPTIONAL {{
-        :{0} :children ?children .
+        :{0} :hasChild ?children .
         ?children rdfs:label ?childrenLabel
     }}
     OPTIONAL {{
-        :{0} :relative ?relative .
+        :{0} :hasRelative ?relative .
         ?relative rdfs:label ?relativeLabel
     }}
     
