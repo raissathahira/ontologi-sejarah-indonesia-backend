@@ -8,7 +8,7 @@ from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
-from .queries import prefix,get_data,get_label,get_no_image
+from .queries import prefix,get_data,get_label
 
 common = "http://commons.wikimedia.org/wiki/Special:FilePath/"
 notFound = "default.png"
@@ -298,20 +298,3 @@ def tes(request):
     # print(request.META)
     return JsonResponse({'ok':'ok'})
          
-
-def no_image(request):
-    query = (prefix + get_no_image)
-    sparql = SPARQLWrapper(
-            blazegraph_url
-            )
-    
-    sparql.setQuery(query
-            )
-    
-    sparql.setReturnFormat(JSON)
-    ret = sparql.queryAndConvert()
-    result = []
-    for i in ret['results']['bindings']:
-        result.append(i['label']['value'])
-    
-    return JsonResponse(result,safe=False)
