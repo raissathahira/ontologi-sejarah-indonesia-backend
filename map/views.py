@@ -44,7 +44,7 @@ def fetch_all_data(request):
     query = prefix + get_all
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        "http://localhost:7200/db/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
