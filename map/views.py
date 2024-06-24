@@ -44,7 +44,7 @@ def fetch_all_data(request):
     query = prefix + get_all
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/db/repositories/indonesian-history-ontology")
+        "http://localhost:7200/repositories/indonesian-history-ontology")
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -56,8 +56,7 @@ def fetch_all_data(request):
         data.append({
             "iri": result["a"]["value"][len(base_prefix):],
             "name": result["label"]["value"],
-            "type": result["type"]["value"],
-            "alt" : (result['label']['value'] + (result['alt']['value'] if "alt" in result else ""))
+            "type": result["type"]["value"]
         })
 
     return JsonResponse(data, safe=False)

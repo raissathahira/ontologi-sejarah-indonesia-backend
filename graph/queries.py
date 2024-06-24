@@ -25,20 +25,3 @@ select DISTINCT ?label where {{
     :{0} rdfs:label ?label
    
 }}"""
-
-get_no_image ="""
-select DISTINCT ?label
-
- where {{
-    
-    ?a rdf:type ?type ;
-    rdfs:label ?label .
-    optional {{
-    ?a :image ?i.
-    
-    }}
-        FILTER (?type IN ( sem:Event, sem:Actor, sem:Place, geo:Feature ) && !bound(?i))
-    
- 
-}}
-"""
