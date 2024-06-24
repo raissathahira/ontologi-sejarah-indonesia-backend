@@ -11,14 +11,21 @@ prefix vcard: <http://www.w3.org/2006/vcard/ns#>
 prefix xsd:   <http://www.w3.org/2001/XMLSchema#> 
 prefix dc:    <http://purl.org/dc/elements/1.1/>
 prefix geof: <http://www.opengis.net/def/function/geosparql/>
+prefix skos: <http://www.w3.org/2004/02/skos/core#> 
 """
 
 get_all = """
-select DISTINCT ?a ?label ?type where {
+select DISTINCT ?a ?label ?type
+(GROUP_CONCAT(DISTINCT ?alt; SEPARATOR="|") AS ?alt)
+ where {
     ?a rdf:type ?type ;
     rdfs:label ?label .
+    optional{{
+    ?a skos:altLabel ?alt.
+    }}
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place, geo:Feature ))
-}"""
+} GROUP BY ?label ?a ?type
+"""
 
 get_search = """
 select DISTINCT ?a ?label ?type ?summary where {{
