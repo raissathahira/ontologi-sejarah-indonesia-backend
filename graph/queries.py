@@ -19,7 +19,14 @@ select DISTINCT ?p ?o ?olabel ?plabel where {{
     ?p rdfs:label ?plabel.
     ?type rdfs:subClassOf sem:Core.
 }}"""
-
+get_all = """
+select DISTINCT ?a ?label
+ where {
+    ?a rdf:type ?type ;
+    rdfs:label ?label .
+    FILTER (?type IN ( sem:Event, sem:Actor))
+}
+"""
 get_label ="""
 select DISTINCT ?label where {{
     :{0} rdfs:label ?label
@@ -27,7 +34,7 @@ select DISTINCT ?label where {{
 }}"""
 
 get_no_image ="""
-select DISTINCT ?label
+select DISTINCT ?a ?label
 
  where {{
     

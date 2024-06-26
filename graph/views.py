@@ -8,8 +8,8 @@ from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
-from .queries import prefix,get_data,get_label,get_no_image
-
+from .queries import prefix,get_data,get_label,get_no_image,get_all
+base_prefix = "http://127.0.0.1:3333/"
 common = "http://commons.wikimedia.org/wiki/Special:FilePath/"
 notFound = "default.png"
 def fetch_wikidata(params):
@@ -78,10 +78,9 @@ def get_image(request,name):
         
         #show response as JSON
         data = data.json()
-        
+        return JsonResponse(data,safe='false')
         
         image = data['entities'][id]['claims']['P18'][0]["mainsnak"]["datavalue"]['value']
-        alias = data['entities'][id]['aliases']['en']
         res = {'image':common + image}
         return JsonResponse(res,safe='false')
     except:
@@ -124,8 +123,47 @@ def get_alias(request,name):
     except:
         return JsonResponse({'response':notFound},safe='false')
 
+def get_id(request,name):
+    try:
+        params = {
+            'action': 'wbsearchentities',
+            'format': 'json',
+            'search': name,
+            'language': 'en'
+        }
     
+        # Fetch API
+        data = fetch_wikidata(params)
+        
+        #show response as JSON
+        data = data.json()
+        
+        id = data['search'][0]['id']
+        label = data['search'][0]['label']
+        res = {'label':label,
+                'id':id}
+        return JsonResponse(res,safe='false')
+    except:
+        return JsonResponse({'response':notFound},safe='false')
+def get_all2(request):
+    query = prefix + get_all
 
+    sparql = SPARQLWrapper(
+        "http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+
+    results = sparql.query().convert()
+
+    data = []
+
+    for result in results["results"]["bindings"]:
+        data.append({
+            "iri": result["a"]["value"][len(base_prefix):],
+            "name": result["label"]["value"]
+        })
+
+    return JsonResponse(data, safe=False)
 
 blazegraph_url ="http://localhost:7200/repositories/indonesian-history-ontology"
 
@@ -312,6 +350,7 @@ def no_image(request):
     ret = sparql.queryAndConvert()
     result = []
     for i in ret['results']['bindings']:
-        result.append(i['label']['value'])
+        result.append({'name':i['label']['value'],
+                        'iri':i['a']['value']})
     
     return JsonResponse(result,safe=False)

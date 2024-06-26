@@ -181,7 +181,7 @@ def get_event_detail(iri, detail):
         else:
             detail["detail"][multivalued_attr[i]] = (
                 multivalued_label[i], None)
-
+    print("halo",result["location"]['value'])
     if "location" in result:
         detail["location"] = [
             mapping(wkt.loads(location)) for location in result["location"]["value"].split("|")]
