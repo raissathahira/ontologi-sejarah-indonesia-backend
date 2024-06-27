@@ -17,7 +17,7 @@ select DISTINCT ?p ?o ?olabel ?plabel where {{
     ?p rdfs:range ?type.
     ?o rdfs:label ?olabel .
     ?p rdfs:label ?plabel.
-    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+    ?type rdfs:subClassOf sem:Core.
 }}"""
 
 get_label ="""

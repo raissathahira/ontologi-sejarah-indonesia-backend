@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
 from .queries import prefix,get_data,get_label
- 
+
 common = "http://commons.wikimedia.org/wiki/Special:FilePath/"
 notFound = "default.png"
 def fetch_wikidata(params):
@@ -78,19 +78,56 @@ def get_image(request,name):
         
         #show response as JSON
         data = data.json()
-        return JsonResponse(data,safe='false')
+        
         
         image = data['entities'][id]['claims']['P18'][0]["mainsnak"]["datavalue"]['value']
+        alias = data['entities'][id]['aliases']['en']
         res = {'image':common + image}
         return JsonResponse(res,safe='false')
     except:
-        return JsonResponse(notFound,safe='false')
+        return JsonResponse({'response':notFound},safe='false')
 
+def get_alias(request,name):
+    try:
+        params = {
+            'action': 'wbsearchentities',
+            'format': 'json',
+            'search': name,
+            'language': 'en'
+        }
+    
+        # Fetch API
+        data = fetch_wikidata(params)
+        
+        #show response as JSON
+        data = data.json()
+        id = data['search'][0]['id']
+
+        params = {
+                'action': 'wbgetentities',
+                'ids': id,
+                'format': 'json',
+                'languages': 'en'
+            }
+        # Fetch API
+        data = fetch_wikidata(params)
+        
+        #show response as JSON
+        data = data.json()
+        
+        
+        
+        alias = data['entities'][id]['aliases']['en']
+        res = {
+                'alias':alias}
+        return JsonResponse(res,safe='false')
+    except:
+        return JsonResponse({'response':notFound},safe='false')
 
     
 
 
-blazegraph_url ="http://localhost:7200/repositories/indonesian-history-ontology"
+blazegraph_url ="http://localhost:7200/repositories/indonesia-history-ontology"
 
 def label(iri):
     query = (prefix + get_label).format(iri)

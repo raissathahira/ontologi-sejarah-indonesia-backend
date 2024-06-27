@@ -11,6 +11,8 @@ from map.queries import prefix, get_timeline_actor, get_timeline_event, get_time
 
 from map.views import get_largest_bound
 
+graphdb = "http://localhost:7200/repositories/indonesia-history-ontology"
+
 def timeline(request):
     search = request.GET.get('filter[search]', '').replace('(', '\\\(').replace(')', '\\\)')
     role = request.GET.get('filter[role]', '')
@@ -23,7 +25,7 @@ def timeline(request):
     elif role == 'Feature':
         query += get_timeline_place.format(search)
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -39,7 +41,7 @@ def show_events(request):
 
     query = prefix + get_search_events.format(iri)
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -67,7 +69,7 @@ def show_events(request):
 def homepage_actor(request):
     query_actor = prefix + get_timeline_actor_homepage
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query_actor)
     sparql.setReturnFormat(JSON)
 
@@ -83,7 +85,7 @@ def homepage_actor(request):
 def homepage_event(request):
     query_event = prefix + get_timeline_event_homepage
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query_event)
     sparql.setReturnFormat(JSON)
 
@@ -99,7 +101,7 @@ def homepage_event(request):
 def homepage_place(request):
     query_place = prefix + get_timeline_place_homepage
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query_place)
     sparql.setReturnFormat(JSON)
 
@@ -113,7 +115,7 @@ def timeline_navbar(request):
 
     query = prefix + get_timeline_navbar
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
