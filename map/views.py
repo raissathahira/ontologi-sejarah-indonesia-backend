@@ -6,13 +6,13 @@ from shapely.ops import unary_union
 from .queries import prefix, get_map, get_all, get_search, get_total_search, get_types, event, actor, person, place, conflict, military_person
 
 base_prefix = "http://127.0.0.1:3333/"
-
+graphdb = "http://localhost:7200/repositories/indonesia-history-ontology"
 
 def fetch_map_data(request):
     query = prefix + get_map
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -44,7 +44,7 @@ def fetch_all_data(request):
     query = prefix + get_all
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -66,7 +66,7 @@ def fetch_search_data(request, search, page):
     query = (prefix + get_search).format(search, page)
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -89,7 +89,7 @@ def fetch_total_search(request, search):
     query = (prefix + get_total_search).format(search)
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -113,7 +113,7 @@ def get_detail(request, iri):
     query = (prefix + get_types).format(iri)
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -152,7 +152,7 @@ def get_event_detail(iri, detail):
     query = (prefix + event).format(iri)
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -191,7 +191,7 @@ def get_place_detail(iri, detail):
     query = (prefix + place).format(iri)
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -220,7 +220,7 @@ def get_actor_detail(iri, detail):
     query = (prefix + actor).format(iri)
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -234,7 +234,7 @@ def get_person_detail(iri, detail):
     query = (prefix + person).format(iri)
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -269,7 +269,7 @@ def get_conflict_detail(iri, detail):
     query = (prefix + conflict).format(iri)
 
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
@@ -299,7 +299,7 @@ def get_military_person_detail(iri, detail):
     query = (prefix + military_person).format(iri)
     
     sparql = SPARQLWrapper(
-        "http://localhost:7200/repositories/indonesian-history-ontology")
+        graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
