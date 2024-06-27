@@ -102,7 +102,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
       ?inst2 time:inXSDDate ?secondDate .
       
       BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-      FILTER regex(str(?label), "{0}", "i") .
+      FILTER(?label = "{0}")  .
 
     }} ORDER BY ?thing
 """
@@ -152,7 +152,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     }}.
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-    FILTER regex(str(?label), "{0}", "i") .
+    FILTER(?label = "{0}") .
 
     }} ORDER BY ?thing
 """
@@ -183,7 +183,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location 
     }}.
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-    FILTER regex(str(?label), "{0}", "i") .
+    FILTER(?label = "{0}")  .
 
     }} ORDER BY ?thing
 """
