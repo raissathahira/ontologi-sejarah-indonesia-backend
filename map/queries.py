@@ -33,8 +33,9 @@ select DISTINCT ?a ?label ?type ?summary where {{
     
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
+    BIND(IF(LCASE(STR(?label)) = LCASE(("{0}")), 0, 1) AS ?priority)
 }}
-ORDER BY ASC(?label)
+ORDER BY ?priority ASC(?label)
 LIMIT 10
 OFFSET {1}
 """
@@ -102,7 +103,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
       ?inst2 time:inXSDDate ?secondDate .
       
       BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-      FILTER regex(str(?label), "{0}", "i") .
+      FILTER(?label = "{0}")  .
 
     }} ORDER BY ?thing
 """
@@ -133,6 +134,25 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
     }} ORDER BY ?thing LIMIT 30
 """
 
+get_timeline_navbar_actors = """
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
+    ?thing rdf:type	sem:Actor ;
+    rdfs:label ?label;
+    
+    OPTIONAL{{ 
+      ?thing :image ?image .
+    }}.
+    
+    ?thing :wikiurl ?wikiurl .
+    
+    ?thing ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+
+    BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+
+    }} ORDER BY ?thing LIMIT 30
+"""
+
 get_timeline_actor = """
 SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     ?thing rdf:type	sem:Actor ;
@@ -152,7 +172,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     }}.
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-    FILTER regex(str(?label), "{0}", "i") .
+    FILTER(?label = "{0}") .
 
     }} ORDER BY ?thing
 """
@@ -183,7 +203,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location 
     }}.
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-    FILTER regex(str(?label), "{0}", "i") .
+    FILTER(?label = "{0}")  .
 
     }} ORDER BY ?thing
 """
