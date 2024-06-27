@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="add navbar-timeline implementation">
+    <list default="true" id="8175c424-89d8-4b00-b526-9c4e36fff915" name="Changes" comment="solving A7">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/map/queries.py" beforeDir="false" afterPath="$PROJECT_DIR$/map/queries.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/timeline/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/timeline/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/timeline/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/timeline/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +98,9 @@
     <MESSAGE value="add query for homepage" />
     <MESSAGE value="change summary query on homepage actor and event; handling query on homepage place" />
     <MESSAGE value="add navbar-timeline implementation" />
-    <option name="LAST_COMMIT_MESSAGE" value="add navbar-timeline implementation" />
+    <MESSAGE value="solving A8" />
+    <MESSAGE value="solving A7" />
+    <option name="LAST_COMMIT_MESSAGE" value="solving A7" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

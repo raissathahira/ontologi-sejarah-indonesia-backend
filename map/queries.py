@@ -134,6 +134,25 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
     }} ORDER BY ?thing LIMIT 30
 """
 
+get_timeline_navbar_actors = """
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
+    ?thing rdf:type	sem:Actor ;
+    rdfs:label ?label;
+    
+    OPTIONAL{{ 
+      ?thing :image ?image .
+    }}.
+    
+    ?thing :wikiurl ?wikiurl .
+    
+    ?thing ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+
+    BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+
+    }} ORDER BY ?thing LIMIT 30
+"""
+
 get_timeline_actor = """
 SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     ?thing rdf:type	sem:Actor ;
