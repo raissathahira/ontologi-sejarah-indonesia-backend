@@ -128,7 +128,7 @@ def timeline_navbar(request):
 def show_actors(request):
     query = prefix + get_timeline_navbar_actors
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
