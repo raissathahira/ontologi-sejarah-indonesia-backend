@@ -81,36 +81,49 @@ where {{
 """
 
 get_timeline_event = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{    ?thing rdf:type	sem:Event ;
-    rdfs:label ?label;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?firstDateMonth ?firstDateYear ?secondDateDay ?secondDateMonth ?secondDateYear WHERE {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
+        
+    ?version rdf:type sem:View.
+
     OPTIONAL{{ 
-      ?thing :image ?image .
+      ?version :image ?image .
     }}.
     
     OPTIONAL{{ 
-      ?thing :wikiurl ?wikiurl .
+      ?version :wikiurl ?wikiurl .
     }}.
     
     OPTIONAL{{ 
-      ?thing ?predicate ?summary ;
+      ?version ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
 
-      ?thing time:hasTime ?tempEntity .
-      ?tempEntity time:hasBeginning ?inst1 ;
-                  time:hasEnd ?inst2 .
+    ?version time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 ;
+                time:hasEnd ?inst2 .
+        
+    	OPTIONAL {{?inst1 time:inDateTime ?firstDate .}}
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
+        OPTIONAL {{?firstDate time:year ?firstDateYear.}}
 
-      ?inst1 time:inXSDDate ?firstDate .
-      ?inst2 time:inXSDDate ?secondDate .
+        OPTIONAL {{?inst2 time:inDateTime ?secondDate .}}
+        OPTIONAL {{?secondDate time:day ?secondDateDay.}}
+        OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
+        OPTIONAL {{?secondDate time:year ?secondDateYear.}}
       
-      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-      FILTER(?label = "{0}")  .
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+    FILTER(?label = "{0}")  .
 
     }} ORDER BY ?thing
 """
 
 get_timeline_navbar = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{    ?thing rdf:type	sem:Event ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
+    ?thing rdf:type	sem:Event ;
     rdfs:label ?label;
     OPTIONAL{{ 
       ?thing :image ?image .
@@ -135,7 +148,8 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
 """
 
 get_timeline_navbar_actors = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?thing rdf:type	sem:Actor ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
+    ?thing rdf:type	sem:Actor ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -153,7 +167,8 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?th
 """
 
 get_timeline_actor = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?thing rdf:type	sem:Actor ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
+    ?thing rdf:type	sem:Actor ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -176,7 +191,8 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?th
 """
 
 get_timeline_place = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{    ?thing rdf:type	geo:Feature ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{
+    ?thing rdf:type	geo:Feature ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -206,7 +222,8 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location 
 """
 
 get_search_events = """
-select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMPLE(?secondDate) as ?secondDate) ?actorLabel where {{    ?event rdf:type sem:Event ;
+select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMPLE(?secondDate) as ?secondDate) ?actorLabel where {{
+    ?event rdf:type sem:Event ;
         rdfs:label ?label ;
         :wikiurl ?wikiurl;
         ?predicate ?summary;
