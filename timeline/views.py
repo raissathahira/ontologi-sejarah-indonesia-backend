@@ -11,7 +11,7 @@ from map.queries import prefix, get_timeline_actor, get_timeline_event, get_time
 
 from map.views import get_largest_bound
 
-graphdb = "http://localhost:7200/repositories/indonesia-history-ontology"
+graphdb = "http://localhost:7200/repositories/test"
 
 def timeline(request):
     search = request.GET.get('filter[search]', '').replace('(', '\\\(').replace(')', '\\\)')
@@ -47,21 +47,7 @@ def show_events(request):
 
     results = sparql.query().convert()
 
-    data = []
-
-    for result in results["results"]["bindings"]:
-        data.append({
-            "baseURI": result["baseURI"]["value"],
-            "event": result["event"]["value"].replace((result["baseURI"]["value"]), ""),
-            "summary": re.sub(r'\n', '<br>', result["summary"]["value"]),
-            "wikiurl": result["wikiurl"]["value"],
-            "image": result["image"]["value"] if result.get("image", {}).get(
-                "value") else 'No image available.svg',
-            "name": result["label"]["value"],
-            "firstDate": result["firstDate"]["value"],
-            "secondDate": result["secondDate"]["value"],
-            "actorLabel": result["actorLabel"]["value"]
-        })
+    data = mapping_timeline('Event', results)
 
     return JsonResponse(data, safe=False)
 
@@ -76,8 +62,6 @@ def homepage_actor(request):
     results = sparql.query().convert()
 
     data = mapping_timeline('Actor', results)
-    
-    print(data)
 
     return JsonResponse(data, safe=False)
 
@@ -92,8 +76,6 @@ def homepage_event(request):
     results = sparql.query().convert()
 
     data = mapping_timeline('Event', results)
-    
-    print(data)
 
     return JsonResponse(data, safe=False)
 
@@ -151,8 +133,12 @@ def mapping_timeline(role, results):
                 "image": result["image"]["value"] if result.get("image", {}).get(
                     "value") else 'No image available.svg',
                 "name": result["label"]["value"],
-                "firstDate": result["firstDate"]["value"],
-                "secondDate": result["secondDate"]["value"],
+                "firstDateDay": result["firstDateDay"]["value"] if result.get("firstDateDay", {}).get("value") else '',
+                "firstDateMonth": result["firstDateMonth"]["value"] if result.get("firstDateMonth", {}).get("value") else '',
+                "firstDateYear": result["firstDateYear"]["value"] if result.get("firstDateYear", {}).get("value") else '',
+                "secondDateDay": result["secondDateDay"]["value"] if result.get("secondDateDay", {}).get("value") else '',
+                "secondDateMonth": result["secondDateMonth"]["value"] if result.get("secondDateMonth", {}).get("value") else '',
+                "secondDateYear": result["secondDateYear"]["value"] if result.get("secondDateYear", {}).get("value") else '',
                 "typeLabel": "Event"
             })
 

@@ -242,29 +242,47 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location 
 """
 
 get_search_events = """
-select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMPLE(?secondDate) as ?secondDate) ?actorLabel where {{
-    ?event rdf:type sem:Event ;
-        rdfs:label ?label ;
-        :wikiurl ?wikiurl;
-        ?predicate ?summary;
-    	FILTER(?predicate IN (:summary, dc:description)).
-    OPTIONAL{{ ?event :image ?image }}.
+select DISTINCT ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?firstDateMonth ?firstDateYear ?secondDateDay ?secondDateMonth ?secondDateYear ?actorLabel where {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
         
-    ?event ?b ?c .
-    
-    FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
-    
-    ?event time:hasTime ?tempEntity .
-    ?tempEntity time:hasBeginning ?inst1 ;
-                  time:hasEnd ?inst2 .
+    ?version rdf:type sem:View.
 
-      ?inst1 time:inXSDDate ?firstDate .
-      ?inst2 time:inXSDDate ?secondDate .
+    OPTIONAL{{ 
+      ?version :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
+      ?version :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
+      ?version ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+    
+    ?version time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 ;
+                time:hasEnd ?inst2 .
+        
+    	OPTIONAL {{?inst1 time:inDateTime ?firstDate .}}
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
+        OPTIONAL {{?firstDate time:year ?firstDateYear.}}
+
+        OPTIONAL {{?inst2 time:inDateTime ?secondDate .}}
+        OPTIONAL {{?secondDate time:day ?secondDateDay.}}
+        OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
+        OPTIONAL {{?secondDate time:year ?secondDateYear.}}
       
-      BIND(REPLACE(STR(?event), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI)  
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+    
+    ?version sem:hasActor ?c .
+    FILTER (?c = :{0})
+    ?c rdfs:label ?actorLabel
       
-    :{0} rdfs:label ?actorLabel  
-}} GROUP BY ?baseURI ?event ?label ?summary ?wikiurl ?firstDate ?image ?actorLabel
+}} ORDER BY ?thing
 """
 
 event = """
