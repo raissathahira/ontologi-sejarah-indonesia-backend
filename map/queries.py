@@ -32,6 +32,12 @@ select DISTINCT ?a ?label ?type ?summary where {{
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
     
+    OPTIONAL{{
+      ?a rdfs:seeAlso ?version. 
+      ?version ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+    
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
     BIND(IF(LCASE(STR(?label)) = LCASE(("{0}")), 0, 1) AS ?priority)
