@@ -465,22 +465,16 @@ where {{
 """
 
 get_timeline_event_homepage = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
-    ?thing rdf:type	sem:Event ;
-    rdfs:label ?label;
-    :image ?image;
-    :wikiurl ?wikiurl; 
-    ?predicate ?summary ;
-	    FILTER(?predicate IN (:summary, dc:description)).
-
-      ?thing time:hasTime ?tempEntity .
-      ?tempEntity time:hasBeginning ?inst1 ;
-                  time:hasEnd ?inst2 .
-
-      ?inst1 time:inXSDDate ?firstDate .
-      ?inst2 time:inXSDDate ?secondDate .
-      
-      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary WHERE {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
+        
+    ?version rdf:type sem:View;
+        ?predicate ?summary ;
+	        FILTER(?predicate IN (:summary, dc:description)).
+	    
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
 
     }} ORDER BY ?thing LIMIT 3
 """
