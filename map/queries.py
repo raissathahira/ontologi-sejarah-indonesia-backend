@@ -128,29 +128,43 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?
 """
 
 get_timeline_navbar = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
-    ?thing rdf:type	sem:Event ;
-    rdfs:label ?label;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?firstDateMonth ?firstDateYear ?secondDateDay ?secondDateMonth ?secondDateYear WHERE {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
+        
+    ?version rdf:type sem:View.
+
     OPTIONAL{{ 
-      ?thing :image ?image .
+      ?version :image ?image .
     }}.
     
-    ?thing :wikiurl ?wikiurl .
+    OPTIONAL{{ 
+      ?version :wikiurl ?wikiurl .
+    }}.
     
-    ?thing ?predicate ?summary ;
-	FILTER(?predicate IN (:summary, dc:description)).
+    OPTIONAL{{ 
+      ?version ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
 
-      ?thing time:hasTime ?tempEntity .
-      ?tempEntity time:hasBeginning ?inst1 ;
-                  time:hasEnd ?inst2 .
+    ?version time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 ;
+                time:hasEnd ?inst2 .
+        
+    	OPTIONAL {{?inst1 time:inDateTime ?firstDate .}}
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
+        OPTIONAL {{?firstDate time:year ?firstDateYear.}}
 
-      ?inst1 time:inXSDDate ?firstDate .
-      ?inst2 time:inXSDDate ?secondDate .
+        OPTIONAL {{?inst2 time:inDateTime ?secondDate .}}
+        OPTIONAL {{?secondDate time:day ?secondDateDay.}}
+        OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
+        OPTIONAL {{?secondDate time:year ?secondDateYear.}}
       
-      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-      FILTER regex(str(?label), "{0}", "i") .
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
 
-    }} ORDER BY ?thing LIMIT 30
+    }} ORDER BY ?thing
 """
 
 get_timeline_navbar_actors = """
