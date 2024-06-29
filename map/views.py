@@ -119,8 +119,7 @@ def get_detail(request, iri):
 
     types = result["typeLabels"]["value"].split(",")
 
-    detail = {}
-    detail["detail"] = {}
+    detail = {"detail": {}}
 
     for type_, func in type_func.items():
         if type_ in types:
@@ -153,61 +152,69 @@ def get_event_detail(iri, detail):
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
-    results = sparql.query().convert()
-    result = results["results"]["bindings"][0]
+    results = sparql.query().convert()["results"]["bindings"]
 
-    if result == []:
+    if results[0] == []:
         return
-
-    detail["detail"]["name"] = ("Nama", result["label"]["value"])
-    detail["wikiurl"] = result["wikiurl"]["value"] if "wikiurl" in result else None
-    detail["type"] = "Event"
     
-    if "summary" in result:
-        detail["detail"]["summary"] = ("Deskripsi", result["summary"]["value"])
     
-    startDate = format_date(
-        result["dayStart"]["value"] if "dayStart" in result else None,
-        result["monthStart"]["value"] if "monthStart" in result else None,
-        result["yearStart"]["value"] if "yearStart" in result else None
-    )
-    
-    if startDate is not None:
-        detail["detail"]["dateStart"] = (
-            "Tanggal mulai", startDate
+    for result in results:
+        version = {"detail": {}}
+        version["detail"]["name"] = ("Nama", result["label"]["value"])
+        version["wikiurl"] = result["wikiurl"]["value"] if "wikiurl" in result else None
+        version["type"] = "Event"
+        
+        if "summary" in result:
+            version["detail"]["summary"] = ("Deskripsi", result["summary"]["value"])
+        
+        startDate = format_date(
+            result["dayStart"]["value"] if "dayStart" in result else None,
+            result["monthStart"]["value"] if "monthStart" in result else None,
+            result["yearStart"]["value"] if "yearStart" in result else None
         )
         
-    endDate = format_date(
-        result["dayEnd"]["value"] if "dayEnd" in result else None,
-        result["monthEnd"]["value"] if "monthEnd" in result else None,
-        result["yearEnd"]["value"] if "yearEnd" in result else None
-    )
-    
-    if endDate is not None:
-        detail["detail"]["dateEnd"] = (
-            "Tanggal selesai", format_date(
-                result["dayEnd"]["value"] if "dayEnd" in result else None,
-                result["monthEnd"]["value"] if "monthEnd" in result else None,
-                result["yearEnd"]["value"] if "yearEnd" in result else None
+        if startDate is not None:
+            version["detail"]["dateStart"] = (
+                "Tanggal mulai", startDate
             )
+            
+        endDate = format_date(
+            result["dayEnd"]["value"] if "dayEnd" in result else None,
+            result["monthEnd"]["value"] if "monthEnd" in result else None,
+            result["yearEnd"]["value"] if "yearEnd" in result else None
         )
+        
+        if endDate is not None:
+            version["detail"]["dateEnd"] = (
+                "Tanggal selesai", format_date(
+                    result["dayEnd"]["value"] if "dayEnd" in result else None,
+                    result["monthEnd"]["value"] if "monthEnd" in result else None,
+                    result["yearEnd"]["value"] if "yearEnd" in result else None
+                )
+            )
 
-    multivalued_attr = ["actor", "person", "feature"]
-    multivalued_label = ["Pihak terlibat", "Tokoh terlibat", "Lokasi kejadian"]
-    
-    for i in range(len(multivalued_attr)):
-        if result[multivalued_attr[i]]['value']:
-            detail["detail"][multivalued_attr[i]] = (multivalued_label[i], [
-                (iri[len(base_prefix):], label)
-                for iri, label in zip(result[multivalued_attr[i]]["value"].split(","), result[multivalued_attr[i] + "Label"]["value"].split(","))
-            ])
+        multivalued_attr = ["actor", "person", "feature"]
+        multivalued_label = ["Pihak terlibat", "Tokoh terlibat", "Lokasi kejadian"]
+        
+        for i in range(len(multivalued_attr)):
+            if result[multivalued_attr[i]]['value']:
+                version["detail"][multivalued_attr[i]] = (multivalued_label[i], [
+                    (iri[len(base_prefix):], label)
+                    for iri, label in zip(result[multivalued_attr[i]]["value"].split(","), result[multivalued_attr[i] + "Label"]["value"].split(","))
+                ])
 
-    if len(result["location"]["value"]) != 0:
-        print(result["location"]["value"])
-        detail["location"] = [
-            mapping(wkt.loads(location)) for location in result["location"]["value"].split("|")]
-        detail["bounds"] = get_largest_bound(detail["location"])
-
+        if len(result["location"]["value"]) != 0:
+            version["location"] = [
+                mapping(wkt.loads(location)) for location in result["location"]["value"].split("|")]
+            version["bounds"] = get_largest_bound(detail["location"])
+            
+        authority = result["authorityLabel"]["value"]
+        detail[authority] = version
+        
+        if "authorities" not in detail:
+            detail["authorities"] = []
+            
+        detail["authorities"].append(authority)
 
 def get_place_detail(iri, detail):
     query = (prefix + place).format(iri)
