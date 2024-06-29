@@ -22,7 +22,7 @@ select DISTINCT ?a ?label ?type where {{
 }}"""
 
 get_search = """
-select DISTINCT ?a ?label ?type ?summary where {{
+select DISTINCT ?a ?label ?type ?summary ?firstDateYear where {{
     ?a rdf:type ?type ;
         rdfs:label ?label ;
         ?b ?c .
@@ -37,6 +37,14 @@ select DISTINCT ?a ?label ?type ?summary where {{
       ?version ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
+    
+    OPTIONAL {{
+        ?a rdfs:seeAlso ?version. 
+        ?version time:hasTime ?tempEntity .
+        ?tempEntity time:hasBeginning ?inst1 .
+        ?inst1 time:inDateTime ?firstDate .
+        ?firstDate time:year ?firstDateYear .
+    }}
     
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
