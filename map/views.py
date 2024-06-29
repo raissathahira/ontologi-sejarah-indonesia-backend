@@ -78,7 +78,8 @@ def fetch_search_data(request, search, page):
             "iri": result["a"]["value"][len(base_prefix):],
             "name": result["label"]["value"],
             "type": result["type"]["value"],
-            "summary": result.get("summary", {}).get("value", "")
+            "summary": result.get("summary", {}).get("value", ""),
+            "firstDateYear": result["firstDateYear"]["value"] if result.get("firstDateYear", {}).get("value") else ''
         })
 
     return JsonResponse(data, safe=False)

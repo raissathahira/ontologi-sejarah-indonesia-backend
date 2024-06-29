@@ -22,7 +22,7 @@ select DISTINCT ?a ?label ?type where {{
 }}"""
 
 get_search = """
-select DISTINCT ?a ?label ?type ?summary where {{
+select DISTINCT ?a ?label ?type ?summary ?firstDateYear where {{
     ?a rdf:type ?type ;
         rdfs:label ?label ;
         ?b ?c .
@@ -32,13 +32,27 @@ select DISTINCT ?a ?label ?type ?summary where {{
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
     
+    OPTIONAL{{
+      ?a rdfs:seeAlso ?version. 
+      ?version ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+    
+    OPTIONAL {{
+        ?a rdfs:seeAlso ?version. 
+        ?version time:hasTime ?tempEntity .
+        ?tempEntity time:hasBeginning ?inst1 .
+        ?inst1 time:inDateTime ?firstDate .
+        ?firstDate time:year ?firstDateYear .
+    }}
+    
     FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
     BIND(IF(LCASE(STR(?label)) = LCASE(("{0}")), 0, 1) AS ?priority)
 }}
 ORDER BY ?priority ASC(?label)
 LIMIT 10
-OFFSET {1}}
+OFFSET {1}
 """
 
 get_total_search = """
@@ -81,61 +95,89 @@ where {{
 """
 
 get_timeline_event = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{    ?thing rdf:type	sem:Event ;
-    rdfs:label ?label;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?firstDateMonth ?firstDateYear ?secondDateDay ?secondDateMonth ?secondDateYear WHERE {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
+        
+    ?version rdf:type sem:View.
+
     OPTIONAL{{ 
-      ?thing :image ?image .
+      ?version :image ?image .
     }}.
     
     OPTIONAL{{ 
-      ?thing :wikiurl ?wikiurl .
+      ?version :wikiurl ?wikiurl .
     }}.
     
     OPTIONAL{{ 
-      ?thing ?predicate ?summary ;
+      ?version ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
 
-      ?thing time:hasTime ?tempEntity .
-      ?tempEntity time:hasBeginning ?inst1 ;
-                  time:hasEnd ?inst2 .
+    ?version time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 ;
+                time:hasEnd ?inst2 .
+        
+    	OPTIONAL {{?inst1 time:inDateTime ?firstDate .}}
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
+        OPTIONAL {{?firstDate time:year ?firstDateYear.}}
 
-      ?inst1 time:inXSDDate ?firstDate .
-      ?inst2 time:inXSDDate ?secondDate .
+        OPTIONAL {{?inst2 time:inDateTime ?secondDate .}}
+        OPTIONAL {{?secondDate time:day ?secondDateDay.}}
+        OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
+        OPTIONAL {{?secondDate time:year ?secondDateYear.}}
       
-      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-      FILTER(?label = "{0}")  .
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+    FILTER(?label = "{0}")  .
 
     }} ORDER BY ?thing
 """
 
 get_timeline_navbar = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{    ?thing rdf:type	sem:Event ;
-    rdfs:label ?label;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?firstDateMonth ?firstDateYear ?secondDateDay ?secondDateMonth ?secondDateYear WHERE {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
+        
+    ?version rdf:type sem:View.
+
     OPTIONAL{{ 
-      ?thing :image ?image .
+      ?version :image ?image .
     }}.
     
-    ?thing :wikiurl ?wikiurl .
+    OPTIONAL{{ 
+      ?version :wikiurl ?wikiurl .
+    }}.
     
-    ?thing ?predicate ?summary ;
-	FILTER(?predicate IN (:summary, dc:description)).
+    OPTIONAL{{ 
+      ?version ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
 
-      ?thing time:hasTime ?tempEntity .
-      ?tempEntity time:hasBeginning ?inst1 ;
-                  time:hasEnd ?inst2 .
+    ?version time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 ;
+                time:hasEnd ?inst2 .
+        
+    	OPTIONAL {{?inst1 time:inDateTime ?firstDate .}}
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
+        OPTIONAL {{?firstDate time:year ?firstDateYear.}}
 
-      ?inst1 time:inXSDDate ?firstDate .
-      ?inst2 time:inXSDDate ?secondDate .
+        OPTIONAL {{?inst2 time:inDateTime ?secondDate .}}
+        OPTIONAL {{?secondDate time:day ?secondDateDay.}}
+        OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
+        OPTIONAL {{?secondDate time:year ?secondDateYear.}}
       
-      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-      FILTER regex(str(?label), "{0}", "i") .
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
 
-    }} ORDER BY ?thing LIMIT 30
+    }} ORDER BY ?thing
 """
 
 get_timeline_navbar_actors = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?thing rdf:type	sem:Actor ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
+    ?thing rdf:type	sem:Actor ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -152,8 +194,32 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?th
     }} ORDER BY ?thing LIMIT 30
 """
 
+get_timeline_navbar_features = """
+SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{
+    ?thing rdf:type	geo:Feature ;
+    rdfs:label ?label;
+    
+    OPTIONAL{{ 
+      ?thing :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
+      ?thing :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
+      ?thing ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+
+    BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+
+    }} ORDER BY ?thing LIMIT 30
+"""
+
 get_timeline_actor = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?thing rdf:type	sem:Actor ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
+    ?thing rdf:type	sem:Actor ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -176,7 +242,8 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?th
 """
 
 get_timeline_place = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{    ?thing rdf:type	geo:Feature ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{
+    ?thing rdf:type	geo:Feature ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -205,29 +272,98 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location 
     }} ORDER BY ?thing
 """
 
-get_search_events = """
-select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMPLE(?secondDate) as ?secondDate) ?actorLabel where {{    ?event rdf:type sem:Event ;
-        rdfs:label ?label ;
-        :wikiurl ?wikiurl;
-        ?predicate ?summary;
-    	FILTER(?predicate IN (:summary, dc:description)).
-    OPTIONAL{{ ?event :image ?image }}.
+get_search_events_actor = """
+select DISTINCT ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?firstDateMonth ?firstDateYear ?secondDateDay ?secondDateMonth ?secondDateYear ?actorLabel where {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
         
-    ?event ?b ?c .
-    
-    FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
-    
-    ?event time:hasTime ?tempEntity .
-    ?tempEntity time:hasBeginning ?inst1 ;
-                  time:hasEnd ?inst2 .
+    ?version rdf:type sem:View.
 
-      ?inst1 time:inXSDDate ?firstDate .
-      ?inst2 time:inXSDDate ?secondDate .
+    OPTIONAL{{ 
+      ?version :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
+      ?version :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
+      ?version ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+    
+    ?version time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 .
+    
+    ?inst1 time:inDateTime ?firstDate .
+    ?firstDate time:year ?firstDateYear .
+    
+    OPTIONAL {{
+        ?tempEntity time:hasEnd ?inst2.
+        ?inst2 time:inDateTime ?secondDate .
+        OPTIONAL {{?secondDate time:day ?secondDateDay.}}
+        OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
+        OPTIONAL {{?secondDate time:year ?secondDateYear.}}
+    }}
+        
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
       
-      BIND(REPLACE(STR(?event), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI)  
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+    
+    ?version sem:hasActor ?c .
+    FILTER (?c = :{0})
+    ?c rdfs:label ?actorLabel
       
-    :{0} rdfs:label ?actorLabel  
-}} GROUP BY ?baseURI ?event ?label ?summary ?wikiurl ?firstDate ?image ?actorLabel
+}} ORDER BY ?thing
+"""
+
+get_search_events_feature = """
+select DISTINCT ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?firstDateMonth ?firstDateYear ?secondDateDay ?secondDateMonth ?secondDateYear ?actorLabel where {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
+        
+    ?version rdf:type sem:View.
+
+    OPTIONAL{{ 
+      ?version :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
+      ?version :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
+      ?version ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+    
+    ?version time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 .
+    
+    ?inst1 time:inDateTime ?firstDate .
+    ?firstDate time:year ?firstDateYear .
+    
+    OPTIONAL {{
+        ?tempEntity time:hasEnd ?inst2.
+        ?inst2 time:inDateTime ?secondDate .
+        OPTIONAL {{?secondDate time:day ?secondDateDay.}}
+        OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
+        OPTIONAL {{?secondDate time:year ?secondDateYear.}}
+    }}
+        
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
+      
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+    
+    ?version :hasLocation ?c .
+    FILTER (?c = :{0})
+    ?c rdfs:label ?featureLabel
+      
+}} ORDER BY ?thing
 """
 
 event = """
@@ -465,22 +601,16 @@ where {{
 """
 
 get_timeline_event_homepage = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
-    ?thing rdf:type	sem:Event ;
-    rdfs:label ?label;
-    :image ?image;
-    :wikiurl ?wikiurl; 
-    ?predicate ?summary ;
-	    FILTER(?predicate IN (:summary, dc:description)).
-
-      ?thing time:hasTime ?tempEntity .
-      ?tempEntity time:hasBeginning ?inst1 ;
-                  time:hasEnd ?inst2 .
-
-      ?inst1 time:inXSDDate ?firstDate .
-      ?inst2 time:inXSDDate ?secondDate .
-      
-      BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary WHERE {{
+    ?thing rdfs:seeAlso ?version;
+        rdfs:label ?label;
+        rdf:type sem:Event.
+        
+    ?version rdf:type sem:View;
+        ?predicate ?summary ;
+	        FILTER(?predicate IN (:summary, dc:description)).
+	    
+    BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
 
     }} ORDER BY ?thing LIMIT 3
 """
@@ -510,7 +640,7 @@ SELECT ?baseURI ?thing (SAMPLE(?latitude) AS ?latitude) (SAMPLE(?label) AS ?labe
               geo:asWKT ?location .
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-}}GROUP BY ?baseURI ?thing
+}GROUP BY ?baseURI ?thing
 ORDER BY ?thing
 LIMIT 3
 """
