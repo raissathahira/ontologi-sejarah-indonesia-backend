@@ -46,7 +46,7 @@ select DISTINCT ?a ?label ?type ?summary ?firstDateYear where {{
         ?firstDate time:year ?firstDateYear .
     }}
     
-    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+    FILTER (?type IN ( sem:Event, sem:Actor, geo:Feature ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
     BIND(IF(LCASE(STR(?label)) = LCASE(("{0}")), 0, 1) AS ?priority)
 }}
@@ -60,7 +60,7 @@ select (COUNT(DISTINCT ?a) as ?count) where {{
     ?a rdf:type ?type ;
         rdfs:label ?label ;
         ?b ?c .
-    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+    FILTER (?type IN ( sem:Event, sem:Actor, geo:Feature ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
 }}
 """
