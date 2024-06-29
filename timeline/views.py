@@ -5,9 +5,10 @@ from django.http import JsonResponse
 from shapely import wkt
 from shapely.geometry import mapping
 
-from map.queries import prefix, get_timeline_actor, get_timeline_event, get_timeline_place, get_search_events, \
+from map.queries import prefix, get_timeline_actor, get_timeline_event, get_timeline_place, \
     get_timeline_event_homepage, get_timeline_actor_homepage, get_timeline_place_homepage, get_timeline_navbar, \
-    get_timeline_navbar_actors
+    get_timeline_navbar_actors, get_timeline_navbar_features, get_types, get_search_events_actor, \
+    get_search_events_feature
 
 from map.views import get_largest_bound
 
@@ -39,7 +40,7 @@ def timeline(request):
 def show_events(request):
     iri = request.GET.get('filter[iri]', '')
 
-    query = prefix + get_search_events.format(iri)
+    query = prefix + get_types.format(iri)
 
     sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query)
@@ -47,21 +48,17 @@ def show_events(request):
 
     results = sparql.query().convert()
 
-    data = []
+    if 'Actor' in  results['results']['bindings'][0]['typeLabels']['value']:
+        q2 = prefix + get_search_events_actor.format(iri)
+    else :
+        q2 = prefix + get_search_events_feature.format(iri)
 
-    for result in results["results"]["bindings"]:
-        data.append({
-            "baseURI": result["baseURI"]["value"],
-            "event": result["event"]["value"].replace((result["baseURI"]["value"]), ""),
-            "summary": re.sub(r'\n', '<br>', result["summary"]["value"]),
-            "wikiurl": result["wikiurl"]["value"],
-            "image": result["image"]["value"] if result.get("image", {}).get(
-                "value") else 'No image available.svg',
-            "name": result["label"]["value"],
-            "firstDate": result["firstDate"]["value"],
-            "secondDate": result["secondDate"]["value"],
-            "actorLabel": result["actorLabel"]["value"]
-        })
+    sparql = SPARQLWrapper(graphdb)
+    sparql.setQuery(q2)
+    sparql.setReturnFormat(JSON)
+
+    results2 = sparql.query().convert()
+    data = mapping_timeline('Event', results2)
 
     return JsonResponse(data, safe=False)
 
@@ -76,8 +73,6 @@ def homepage_actor(request):
     results = sparql.query().convert()
 
     data = mapping_timeline('Actor', results)
-    
-    print(data)
 
     return JsonResponse(data, safe=False)
 
@@ -92,8 +87,6 @@ def homepage_event(request):
     results = sparql.query().convert()
 
     data = mapping_timeline('Event', results)
-    
-    print(data)
 
     return JsonResponse(data, safe=False)
 
@@ -128,13 +121,38 @@ def timeline_navbar(request):
 def show_actors(request):
     query = prefix + get_timeline_navbar_actors
 
-    sparql = SPARQLWrapper("http://localhost:7200/repositories/indonesian-history-ontology")
+    sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query)
     sparql.setReturnFormat(JSON)
 
     results = sparql.query().convert()
 
     data = mapping_timeline('Actor', results)
+
+    return JsonResponse(data, safe=False)
+
+def show_features(request):
+    query = prefix + get_timeline_navbar_features
+
+    sparql = SPARQLWrapper(graphdb)
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+
+    results = sparql.query().convert()
+
+    data = []
+    for result in results["results"]["bindings"]:
+        data.append({
+            "baseURI": result["baseURI"]["value"],
+            "thing": result["thing"]["value"].replace((result["baseURI"]["value"]), ""),
+            "summary": result["summary"]["value"] if result.get("summary", {}).get("value") else '',
+            "wikiurl": result["wikiurl"]["value"] if result.get("wikiurl", {}).get("value") else '',
+            "image": result["image"]["value"] if result.get("image", {}).get(
+                "value") else 'No image available.svg',
+            "name": result["label"]["value"],
+            "dummyDate": '2000-01-01',
+            "typeLabel": "Feature"
+        })
 
     return JsonResponse(data, safe=False)
 
@@ -151,8 +169,12 @@ def mapping_timeline(role, results):
                 "image": result["image"]["value"] if result.get("image", {}).get(
                     "value") else 'No image available.svg',
                 "name": result["label"]["value"],
-                "firstDate": result["firstDate"]["value"],
-                "secondDate": result["secondDate"]["value"],
+                "firstDateDay": result["firstDateDay"]["value"] if result.get("firstDateDay", {}).get("value") else '',
+                "firstDateMonth": result["firstDateMonth"]["value"] if result.get("firstDateMonth", {}).get("value") else '',
+                "firstDateYear": result["firstDateYear"]["value"] if result.get("firstDateYear", {}).get("value") else '',
+                "secondDateDay": result["secondDateDay"]["value"] if result.get("secondDateDay", {}).get("value") else '',
+                "secondDateMonth": result["secondDateMonth"]["value"] if result.get("secondDateMonth", {}).get("value") else '',
+                "secondDateYear": result["secondDateYear"]["value"] if result.get("secondDateYear", {}).get("value") else '',
                 "typeLabel": "Event"
             })
 
