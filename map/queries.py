@@ -634,7 +634,7 @@ SELECT ?baseURI ?thing (SAMPLE(?latitude) AS ?latitude) (SAMPLE(?label) AS ?labe
               geo:asWKT ?location .
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-}}GROUP BY ?baseURI ?thing
+}GROUP BY ?baseURI ?thing
 ORDER BY ?thing
 LIMIT 3
 """
