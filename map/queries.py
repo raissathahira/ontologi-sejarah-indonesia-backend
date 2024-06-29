@@ -483,17 +483,18 @@ where {{
             :latitude ?lat ;
             :longitude ?lng .
             
+        ?geometryB geo:asWKT ?locationB .
+        
+        FILTER (
+            geof:sfContains(?location, ?locationB)
+        )
+        
         ?event rdf:type sem:Event ;
             rdfs:label ?eventLabel ;
             rdfs:seeAlso ?version .
         
         ?version :hasLocation ?feature .
         ?feature geo:hasGeometry ?geometryB .
-        ?geometryB geo:asWKT ?locationB
-        
-        FILTER(
-            geof:sfContains(?location, ?locationB)
-        )
     }}
     
     OPTIONAL {{
