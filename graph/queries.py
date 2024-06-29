@@ -25,3 +25,32 @@ select DISTINCT ?label where {{
     :{0} rdfs:label ?label
    
 }}"""
+
+get_type ="""
+select DISTINCT ?type where {{
+    :{0} rdf:type ?type.
+    filter(?type IN ( sem:Event, sem:Actor,geo:Feature))
+   
+}}"""
+get_wikiurl ="""
+select DISTINCT ?wikiurl where {{
+    :{0} :wikiurl ?wikiurl.
+   
+}}"""
+get_start_year_event="""
+select distinct ?year where {{
+    :{0} rdfs:seeAlso ?version.
+    ?version time:hasTime ?temp.
+    ?temp time:hasBeginning ?instant.
+    ?instant time:inDateTime ?blank.
+    ?blank time:year ?year
+}}
+"""
+get_start_year="""
+select distinct ?year where {{
+    :{0} time:hasTime ?temp.
+    ?temp time:hasBeginning ?instant.
+    ?instant time:inDateTime ?blank.
+    ?blank time:year ?year
+    }}
+"""
