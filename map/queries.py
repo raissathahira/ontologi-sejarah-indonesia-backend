@@ -14,11 +14,12 @@ prefix geof: <http://www.opengis.net/def/function/geosparql/>
 """
 
 get_all = """
-select DISTINCT ?a ?label ?type where {
+select DISTINCT ?a ?label ?type where {{
     ?a rdf:type ?type ;
     rdfs:label ?label .
-    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place, geo:Feature ))
-}"""
+    
+    FILTER (?type IN ( sem:Event, sem:Actor, geo:Feature ))
+}}"""
 
 get_search = """
 select DISTINCT ?a ?label ?type ?summary where {{
@@ -26,8 +27,8 @@ select DISTINCT ?a ?label ?type ?summary where {{
         rdfs:label ?label ;
         ?b ?c .
         
-    OPTIONAL{{ 
-      ?a ?predicate ?summary ;
+    OPTIONAL {{ 
+        ?a ?predicate ?summary ;
 	    FILTER(?predicate IN (:summary, dc:description)).
     }}.
     
@@ -37,7 +38,7 @@ select DISTINCT ?a ?label ?type ?summary where {{
 }}
 ORDER BY ?priority ASC(?label)
 LIMIT 10
-OFFSET {1}
+OFFSET {1}}
 """
 
 get_total_search = """
@@ -51,36 +52,36 @@ select (COUNT(DISTINCT ?a) as ?count) where {{
 """
 
 get_map = """ 
-select DISTINCT ?event ?label ?lat ?lon ?dateStart ?dateEnd where {
+select DISTINCT ?event ?label ?lat ?lon ?yearStart where {{
     ?event rdf:type sem:Event ;
-    	rdfs:label ?label ;
-    	:hasLocation ?feature .
-    
+        rdfs:label ?label ;
+        rdfs:seeAlso ?version .
+
+    ?version rdf:type sem:View ;
+        :hasLocation ?feature .
+
     ?feature geo:hasGeometry ?geometry .
     ?geometry :latitude ?lat ;
-    	:longitude ?lon .
-    
-    ?event time:hasTime ?tempEntity .
-    ?tempEntity time:hasBeginning ?inst1 ;
-    	time:hasEnd ?inst2 .
-    
-    ?inst1 time:inXSDDate ?dateStart .
-    ?inst2 time:inXSDDate ?dateEnd .
-}
+        :longitude ?lon .
+
+    ?version time:hasTime ?tempEntity .
+    ?tempEntity time:hasBeginning ?inst1 .
+    ?inst1 time:inDateTime ?dateTime .
+    ?dateTime time:year ?yearStart .
+}}
 """
 
 get_types = """
 select DISTINCT 
 (GROUP_CONCAT(distinct ?typeLabel; SEPARATOR=",") as ?typeLabels)
 where {{
-    <http://127.0.0.1:3333/{0}> rdf:type ?type .
+    :{0} rdf:type ?type .
     ?type rdfs:label ?typeLabel .
 }}
 """
 
 get_timeline_event = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
-    ?thing rdf:type	sem:Event ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{    ?thing rdf:type	sem:Event ;
     rdfs:label ?label;
     OPTIONAL{{ 
       ?thing :image ?image .
@@ -109,8 +110,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
 """
 
 get_timeline_navbar = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{
-    ?thing rdf:type	sem:Event ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?secondDate WHERE {{    ?thing rdf:type	sem:Event ;
     rdfs:label ?label;
     OPTIONAL{{ 
       ?thing :image ?image .
@@ -135,8 +135,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDate ?sec
 """
 
 get_timeline_navbar_actors = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
-    ?thing rdf:type	sem:Actor ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?thing rdf:type	sem:Actor ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -154,8 +153,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
 """
 
 get_timeline_actor = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
-    ?thing rdf:type	sem:Actor ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{    ?thing rdf:type	sem:Actor ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -178,8 +176,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
 """
 
 get_timeline_place = """
-SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{
-    ?thing rdf:type	geo:Feature ;
+SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{    ?thing rdf:type	geo:Feature ;
     rdfs:label ?label;
     
     OPTIONAL{{ 
@@ -209,8 +206,7 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location 
 """
 
 get_search_events = """
-select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMPLE(?secondDate) as ?secondDate) ?actorLabel where {{
-    ?event rdf:type sem:Event ;
+select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMPLE(?secondDate) as ?secondDate) ?actorLabel where {{    ?event rdf:type sem:Event ;
         rdfs:label ?label ;
         :wikiurl ?wikiurl;
         ?predicate ?summary;
@@ -235,18 +231,9 @@ select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMP
 """
 
 event = """
-prefix :      <http://127.0.0.1:3333/> 
-prefix foaf:  <http://xmlns.com/foaf/0.1/> 
-prefix geo:   <http://www.opengis.net/ont/geosparql#> 
-prefix owl:   <http://www.w3.org/2002/07/owl#> 
-prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> 
-prefix sem:   <http://semanticweb.cs.vu.nl/2009/11/sem/> 
-prefix time:  <http://www.w3.org/2006/time#> 
-prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
-prefix xsd:   <http://www.w3.org/2001/XMLSchema#> 
-prefix dc:    <http://purl.org/dc/elements/1.1/>
-select DISTINCT ?label ?dateStart ?dateEnd
+select DISTINCT ?label ?authorityLabel ?summary ?image
+?dayStart ?monthStart ?yearStart
+?dayEnd ?monthEnd ?yearEnd
 (GROUP_CONCAT(DISTINCT ?location; SEPARATOR="|") AS ?location)
 (GROUP_CONCAT(DISTINCT ?actor; SEPARATOR=",") AS ?actor)
 (GROUP_CONCAT(DISTINCT ?actorLabel; SEPARATOR=",") AS ?actorLabel)
@@ -254,194 +241,207 @@ select DISTINCT ?label ?dateStart ?dateEnd
 (GROUP_CONCAT(DISTINCT ?personLabel; SEPARATOR=",") AS ?personLabel)
 (GROUP_CONCAT(DISTINCT ?feature; SEPARATOR=",") AS ?feature)
 (GROUP_CONCAT(DISTINCT ?featureLabel; SEPARATOR=",") AS ?featureLabel)
-where {{
-    :{0} rdfs:label ?label .
-    optional{{
-        :{0} :hasLocation ?feature .
-        ?feature rdfs:label ?featureLabel.
-        }}
-    optional{{
-        :{0} time:hasTime ?tempEntity .
-        ?tempEntity time:hasBeginning ?inst1 .
-        ?inst1 time:inXSDDate ?dateStart .
-        }}
-    optional{{
-        :{0} time:hasTime ?tempEntity .
-        ?tempEntity time:hasEnd ?inst2 .
-        ?inst2 time:inXSDDate ?dateEnd .
-        }}
+where {{    
+    :{0} rdf:type sem:Event ;
+    rdfs:label ?label ;
+    rdfs:seeAlso ?version .
     
+    ?version rdf:type sem:View .
+    ?version sem:accordingTo ?authority .
+    ?authority rdfs:label ?authorityLabel
     
-    
-    OPTIONAL {{ 
-        ?feature geo:hasGeometry ?geometry .
-        ?geometry geo:asWKT ?location .
+    OPTIONAL {{
+        ?version :hasLocation ?feature .
+        ?feature rdfs:label ?featureLabel .
+        
+        OPTIONAL {{
+            ?feature geo:hasGeometry ?geometry .
+            ?geometry geo:asWKT ?location .
+        }}    
     }}
     
     OPTIONAL {{
-        :{0} sem:hasActor ?actor .
-        ?actor rdfs:label ?actorLabel .  
-    }
-    
-    MINUS {{ ?actor rdf:type foaf:Person }}
+        ?version time:hasTime ?tempEntity .
+        
+        OPTIONAL {{
+            ?tempEntity time:hasBeginning ?instStart .
+            ?instStart time:inDateTime ?dateTime .
+        
+        	OPTIONAL {{
+                ?dateTime time:year ?yearStart .
+        	}}
+                 
+            OPTIONAL {{
+                ?dateTime time:month ?monthStart .
+            }}
+            
+            OPTIONAL {{                
+                ?dateTime time:day ?dayStart .
+            }}        
+        }}
+                
+        OPTIONAL {{
+            ?tempEntity time:hasEnd ?instEnd .
+            ?instEnd time:inDateTime ?dateTimeEnd .
+
+            OPTIONAL {{
+                ?dateTimeEnd time:year ?yearEnd .
+            }}
+            
+            OPTIONAL {{
+                ?dateTimeEnd time:month ?monthEnd .
+            }}
+            
+            OPTIONAL {{
+                ?dateTimeEnd time:day ?dayEnd .
+            }}
+        }}    
+    }}
     
     OPTIONAL {{
-        :{0} sem:hasActor ?person .
+        ?version sem:hasActor ?actor .
+        ?actor rdfs:label ?actorLabel .
+    }}
+    
+    MINUS {{ 
+        ?actor rdf:type foaf:Person .
+    }}
+    
+    OPTIONAL {{
+        ?version sem:hasActor ?person .
         ?person rdfs:label ?personLabel ;
             rdf:type foaf:Person .
     }}
-}} GROUP BY ?label ?dateStart ?dateEnd
+        
+    OPTIONAL {{
+        ?version dc:description ?summary .
+    }}
+        
+    OPTIONAL {{
+        ?version :image ?image .
+    }} 
+    
+}} GROUP BY ?label ?authorityLabel ?summary ?image
+?dayStart ?monthStart ?yearStart
+?dayEnd ?monthEnd ?yearEnd
 """
 
 place = """
 select DISTINCT ?label ?event ?eventLabel ?location ?lat ?lng
-
 where {{
     :{0} rdf:type geo:Feature ;
         rdfs:label ?label ;
-        geo:hasGeometry ?geometryA .
-    
-    ?geometryA geo:asWKT ?location ;
-        :latitude ?lat ;
-        :longitude ?lng .
-    
-    ?event rdf:type sem:Event ;
-        rdfs:label ?eventLabel ;
-        :hasLocation ?feature .
         
-    ?feature geo:hasGeometry ?geometryB .
-    ?geometryB geo:asWKT ?locationB
-    
-    FILTER(
-        geof:sfContains(?location, ?locationB)
-    )
+    OPTIONAL {{
+        :{0} geo:hasGeometry ?geometryA .
+        
+        ?geometryA geo:asWKT ?location ;
+            :latitude ?lat ;
+            :longitude ?lng .
+            
+        ?event rdf:type sem:Event ;
+            rdfs:label ?eventLabel ;
+            rdfs:seeAlso ?version .
+        
+        ?version :hasLocation ?feature .
+        ?feature geo:hasGeometry ?geometryB .
+        ?geometryB geo:asWKT ?locationB
+        
+        FILTER(
+            geof:sfContains(?location, ?locationB)
+        )
+    }}
     
 }}
-
 """
 
 actor = """
 select DISTINCT ?label ?image
+?dayStart ?monthStart ?yearStart
+?dayEnd ?monthEnd ?yearEnd
 (GROUP_CONCAT(DISTINCT ?event; SEPARATOR=",") AS ?event)
 (GROUP_CONCAT(DISTINCT ?eventLabel; SEPARATOR=",") AS ?eventLabel)
-where {{
+where {{    
     :{0} rdfs:label ?label .
+    
+    OPTIONAL {{
+        :{0} time:hasTime ?tempEntity .
+        
+        OPTIONAL {{
+            ?tempEntity time:hasBeginning ?instStart .
+            ?instStart time:inDateTime ?dateTime .
+        
+        	OPTIONAL {{
+                ?dateTime time:year ?yearStart .
+        	}}
+                 
+            OPTIONAL {{
+                ?dateTime time:month ?monthStart .
+            }}
+            
+            OPTIONAL {{                
+                ?dateTime time:day ?dayStart .
+            }}        
+        }}
+                
+        OPTIONAL {{
+            ?tempEntity time:hasEnd ?instEnd .
+            ?instEnd time:inDateTime ?dateTimeEnd .
+
+            OPTIONAL {{
+                ?dateTimeEnd time:year ?yearEnd .
+            }}
+            
+            OPTIONAL {{
+                ?dateTimeEnd time:month ?monthEnd .
+            }}
+            
+            OPTIONAL {{
+                ?dateTimeEnd time:day ?dayEnd .
+            }}
+        }}    
+    }}
     
     OPTIONAL {{
         :{0} :image ?image .
     }}
     
     OPTIONAL {{
-        :{0} :isActorOf ?event .
+        :{0} :isActorOf ?version .
+        ?event rdfs:seeAlso ?version .
         ?event rdf:type sem:Event ;
             rdfs:label ?eventLabel .
-    }}
-    
-}} GROUP BY ?label ?image
+    }}    
+}}
+GROUP BY ?label ?image
+?dayStart ?monthStart ?yearStart
+?dayEnd ?monthEnd ?yearEnd
 """
 
 person = """
-select DISTINCT ?religion ?dateStart ?dateEnd ?birthname
-(GROUP_CONCAT(DISTINCT ?spouse; SEPARATOR=",") AS ?spouse)
-(GROUP_CONCAT(DISTINCT ?spouseLabel; SEPARATOR=",") AS ?spouseLabel)
-(GROUP_CONCAT(DISTINCT ?parent; SEPARATOR=",") AS ?parent)
-(GROUP_CONCAT(DISTINCT ?parentLabel; SEPARATOR=",") AS ?parentLabel)
+select DISTINCT
+(GROUP_CONCAT(DISTINCT ?parent; SEPARATOR=",") AS ?parents)
+(GROUP_CONCAT(DISTINCT ?parentLabel; SEPARATOR=",") AS ?parentsLabel)
 (GROUP_CONCAT(DISTINCT ?children; SEPARATOR=",") AS ?children)
 (GROUP_CONCAT(DISTINCT ?childrenLabel; SEPARATOR=",") AS ?childrenLabel)
 (GROUP_CONCAT(DISTINCT ?relative; SEPARATOR=",") AS ?relative)
 (GROUP_CONCAT(DISTINCT ?relativeLabel; SEPARATOR=",") AS ?relativeLabel)
-(GROUP_CONCAT(DISTINCT ?event; SEPARATOR=",") AS ?event)
-(GROUP_CONCAT(DISTINCT ?eventLabel; SEPARATOR=",") AS ?eventLabel)
 where {{
     OPTIONAL {{
-        :{0} :religion ?religion .
-        
-    }}
-    
-    OPTIONAL {{
-        :{0} :birthName ?birthname .
+        :{0} :hasParent ?parent .
+        ?parent rdfs:label ?parentLabel .
     }}
 
-    optional {{    
-    :{0} time:hasTime ?tempEntity .
-    ?tempEntity time:hasBeginning ?inst1 ;
-    	time:hasEnd ?inst2 .
-     ?inst1 time:inXSDDate ?dateStart .
-     ?inst2 time:inXSDDate ?dateEnd .
-    }}
-    
-    OPTIONAL {{
-        :{0} :spouse ?spouse .
-        ?spouse rdfs:label ?spouseLabel
-    }}
     OPTIONAL {{
         :{0} :hasChild ?children .
         ?children rdfs:label ?childrenLabel
     }}
+    
     OPTIONAL {{
         :{0} :hasRelative ?relative .
         ?relative rdfs:label ?relativeLabel
     }}
-    
-    OPTIONAL {{
-        :{0} :isActorOf ?event .
-        ?event rdf:type sem:Event ;
-            rdfs:label ?eventLabel .
-    }}
-    
-}} GROUP BY ?religion ?dateStart ?dateEnd ?birthname
-"""
-
-conflict = """
-select DISTINCT ?result ?casualties ?causes where {{    
-    OPTIONAL {{
-        :{0} :result ?result
-    }}
-    
-    OPTIONAL {{
-        :{0} :casualties ?casualties
-    }}
-    
-    OPTIONAL {{
-        :{0} :causes ?causes
-    }}
 }}
-"""
-
-military_person = """
-select DISTINCT 
-(GROUP_CONCAT(DISTINCT ?commands; SEPARATOR=",") AS ?commands)
-(GROUP_CONCAT(DISTINCT ?commandsLabel; SEPARATOR=",") AS ?commandsLabel)
-(GROUP_CONCAT(DISTINCT ?battles; SEPARATOR=",") AS ?battles)
-(GROUP_CONCAT(DISTINCT ?battlesLabel; SEPARATOR=",") AS ?battlesLabel)
-(GROUP_CONCAT(DISTINCT ?awards; SEPARATOR=",") AS ?awards)
-?label ?religion ?laterwork where {{    
-    :{0} rdfs:label ?label
-    
-    OPTIONAL {{
-        :{0} :laterwork ?laterwork 
-        
-    }}
-    OPTIONAL {{
-        :{0} :birth_name ?birthname 
-        
-    }}
-    OPTIONAL {{
-        :{0} :awards ?awards 
-        
-    }}
-    OPTIONAL {{
-        :{0} :commands ?commands .
-        ?commands rdfs:label ?commandsLabel
-    }}
-    
-    OPTIONAL {{
-        :{0} :battles ?battles .
-        ?battles rdfs:label ?battlesLabel
-    }}
-    
-    
-}} GROUP BY ?label ?religion ?laterwork
 """
 
 get_timeline_event_homepage = """
@@ -490,8 +490,7 @@ SELECT ?baseURI ?thing (SAMPLE(?latitude) AS ?latitude) (SAMPLE(?label) AS ?labe
               geo:asWKT ?location .
 
     BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
-}
-GROUP BY ?baseURI ?thing
+}}GROUP BY ?baseURI ?thing
 ORDER BY ?thing
 LIMIT 3
 """
