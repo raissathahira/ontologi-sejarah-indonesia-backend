@@ -39,22 +39,16 @@ def timeline(request):
 
 def show_events(request):
     iri = request.GET.get('filter[iri]', '')
+    type = request.GET.get('filter[type]', '')
+    query = prefix
 
-    query = prefix + get_types.format(iri)
+    if type == 'Actor':
+        query += get_search_events_actor.format(iri)
+    else :
+        query += get_search_events_feature.format(iri)
 
     sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query)
-    sparql.setReturnFormat(JSON)
-
-    results = sparql.query().convert()
-
-    if 'Actor' in  results['results']['bindings'][0]['typeLabels']['value']:
-        q2 = prefix + get_search_events_actor.format(iri)
-    else :
-        q2 = prefix + get_search_events_feature.format(iri)
-
-    sparql = SPARQLWrapper(graphdb)
-    sparql.setQuery(q2)
     sparql.setReturnFormat(JSON)
 
     results2 = sparql.query().convert()
