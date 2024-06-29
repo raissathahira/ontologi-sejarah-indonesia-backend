@@ -441,10 +441,10 @@ where {{
     OPTIONAL {{
         ?version sem:hasActor ?actor .
         ?actor rdfs:label ?actorLabel .
-    }}
-    
-    MINUS {{ 
-        ?actor rdf:type foaf:Person .
+        
+        FILTER NOT EXISTS {{ 
+            ?actor rdf:type foaf:Person .
+        }}
     }}
     
     OPTIONAL {{

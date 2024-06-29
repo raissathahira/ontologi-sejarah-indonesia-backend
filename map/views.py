@@ -207,7 +207,7 @@ def get_event_detail(iri, detail):
         if len(result["location"]["value"]) != 0:
             version["location"] = [
                 mapping(wkt.loads(location)) for location in result["location"]["value"].split("|")]
-            version["bounds"] = get_largest_bound(detail["location"])
+            version["bounds"] = get_largest_bound(version["location"])
             
         authority = result["authorityLabel"]["value"]
         detail[authority] = version
