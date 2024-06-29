@@ -248,7 +248,7 @@ where {{
     
     ?version rdf:type sem:View .
     ?version sem:accordingTo ?authority .
-    ?authority rdfs:label ?authorityLabel
+    ?authority rdfs:label ?authorityLabel .
     
     OPTIONAL {{
         ?version :hasLocation ?feature .
