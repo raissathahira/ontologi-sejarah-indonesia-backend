@@ -127,7 +127,7 @@ def get_alias(request,name):
     
 
 
-blazegraph_url ="http://localhost:7200/repositories/test"
+blazegraph_url ="http://localhost:7200/repositories/indonesia-history-ontology"
 
 def label(iri):
     query = (prefix + get_label).format(iri)
