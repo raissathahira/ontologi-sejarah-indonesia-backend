@@ -46,7 +46,7 @@ select DISTINCT ?a ?label ?type ?summary ?firstDateYear where {{
         ?firstDate time:year ?firstDateYear .
     }}
     
-    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+    FILTER (?type IN ( sem:Event, sem:Actor, geo:Feature ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
     BIND(IF(LCASE(STR(?label)) = LCASE(("{0}")), 0, 1) AS ?priority)
 }}
@@ -60,7 +60,7 @@ select (COUNT(DISTINCT ?a) as ?count) where {{
     ?a rdf:type ?type ;
         rdfs:label ?label ;
         ?b ?c .
-    FILTER (?type IN ( sem:Event, sem:Actor, sem:Place ))
+    FILTER (?type IN ( sem:Event, sem:Actor, geo:Feature ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
 }}
 """
@@ -116,18 +116,21 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?
     }}.
 
     ?version time:hasTime ?tempEntity .
-    ?tempEntity time:hasBeginning ?inst1 ;
-                time:hasEnd ?inst2 .
-        
-    	OPTIONAL {{?inst1 time:inDateTime ?firstDate .}}
-        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
-        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
-        OPTIONAL {{?firstDate time:year ?firstDateYear.}}
-
-        OPTIONAL {{?inst2 time:inDateTime ?secondDate .}}
+    ?tempEntity time:hasBeginning ?inst1 .
+    
+    ?inst1 time:inDateTime ?firstDate .
+    ?firstDate time:year ?firstDateYear .
+    
+    OPTIONAL {{
+        ?tempEntity time:hasEnd ?inst2.
+        ?inst2 time:inDateTime ?secondDate .
         OPTIONAL {{?secondDate time:day ?secondDateDay.}}
         OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
         OPTIONAL {{?secondDate time:year ?secondDateYear.}}
+    }}
+        
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
       
     BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
     FILTER(?label = "{0}")  .
@@ -157,22 +160,25 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image ?firstDateDay ?
     }}.
 
     ?version time:hasTime ?tempEntity .
-    ?tempEntity time:hasBeginning ?inst1 ;
-                time:hasEnd ?inst2 .
-        
-    	OPTIONAL {{?inst1 time:inDateTime ?firstDate .}}
-        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
-        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
-        OPTIONAL {{?firstDate time:year ?firstDateYear.}}
-
-        OPTIONAL {{?inst2 time:inDateTime ?secondDate .}}
+    ?tempEntity time:hasBeginning ?inst1 .
+    
+    ?inst1 time:inDateTime ?firstDate .
+    ?firstDate time:year ?firstDateYear .
+    
+    OPTIONAL {{
+        ?tempEntity time:hasEnd ?inst2.
+        ?inst2 time:inDateTime ?secondDate .
         OPTIONAL {{?secondDate time:day ?secondDateDay.}}
         OPTIONAL {{?secondDate time:month ?secondDateMonth.}}
         OPTIONAL {{?secondDate time:year ?secondDateYear.}}
+    }}
+        
+        OPTIONAL {{?firstDate time:day ?firstDateDay.}}
+        OPTIONAL {{?firstDate time:month ?firstDateMonth.}}
       
     BIND(REPLACE(STR(?version), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
 
-    }} ORDER BY ?thing
+    }} ORDER BY ?thing LIMIT 30
 """
 
 get_timeline_navbar_actors = """
