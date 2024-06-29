@@ -7,7 +7,7 @@ from shapely.geometry import mapping
 
 from map.queries import prefix, get_timeline_actor, get_timeline_event, get_timeline_place, get_search_events, \
     get_timeline_event_homepage, get_timeline_actor_homepage, get_timeline_place_homepage, get_timeline_navbar, \
-    get_timeline_navbar_actors
+    get_timeline_navbar_actors, get_timeline_navbar_features
 
 from map.views import get_largest_bound
 
@@ -117,6 +117,31 @@ def show_actors(request):
     results = sparql.query().convert()
 
     data = mapping_timeline('Actor', results)
+
+    return JsonResponse(data, safe=False)
+
+def show_features(request):
+    query = prefix + get_timeline_navbar_features
+
+    sparql = SPARQLWrapper(graphdb)
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+
+    results = sparql.query().convert()
+
+    data = []
+    for result in results["results"]["bindings"]:
+        data.append({
+            "baseURI": result["baseURI"]["value"],
+            "thing": result["thing"]["value"].replace((result["baseURI"]["value"]), ""),
+            "summary": result["summary"]["value"] if result.get("summary", {}).get("value") else '',
+            "wikiurl": result["wikiurl"]["value"] if result.get("wikiurl", {}).get("value") else '',
+            "image": result["image"]["value"] if result.get("image", {}).get(
+                "value") else 'No image available.svg',
+            "name": result["label"]["value"],
+            "dummyDate": '2000-01-01',
+            "typeLabel": "Feature"
+        })
 
     return JsonResponse(data, safe=False)
 

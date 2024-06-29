@@ -194,6 +194,29 @@ SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     }} ORDER BY ?thing LIMIT 30
 """
 
+get_timeline_navbar_features = """
+SELECT DISTINCT  ?baseURI ?thing ?label ?latitude ?longitude ?summary ?location ?wikiurl ?image WHERE {{
+    ?thing rdf:type	geo:Feature ;
+    rdfs:label ?label;
+    
+    OPTIONAL{{ 
+      ?thing :image ?image .
+    }}.
+    
+    OPTIONAL{{ 
+      ?thing :wikiurl ?wikiurl .
+    }}.
+    
+    OPTIONAL{{ 
+      ?thing ?predicate ?summary ;
+	    FILTER(?predicate IN (:summary, dc:description)).
+    }}.
+
+    BIND(REPLACE(STR(?thing), "([^:/]+://[^/]+/).*", "$1") AS ?baseURI) .
+
+    }} ORDER BY ?thing LIMIT 30
+"""
+
 get_timeline_actor = """
 SELECT DISTINCT  ?baseURI ?thing ?label ?summary ?wikiurl ?image WHERE {{
     ?thing rdf:type	sem:Actor ;
