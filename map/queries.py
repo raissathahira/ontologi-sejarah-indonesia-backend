@@ -231,7 +231,7 @@ select DISTINCT ?baseURI ?event ?label ?summary ?wikiurl ?image ?firstDate (SAMP
 """
 
 event = """
-select DISTINCT ?label ?authorityLabel ?summary ?image
+select DISTINCT ?label ?authorityLabel ?summary ?image ?wikiurl
 ?dayStart ?monthStart ?yearStart
 ?dayEnd ?monthEnd ?yearEnd
 (GROUP_CONCAT(DISTINCT ?location; SEPARATOR="|") AS ?location)
@@ -258,6 +258,10 @@ where {{
             ?feature geo:hasGeometry ?geometry .
             ?geometry geo:asWKT ?location .
         }}    
+    }}
+    
+    OPTIONAL {{
+        ?version :wikiurl ?wikiurl .
     }}
     
     OPTIONAL {{
@@ -321,17 +325,21 @@ where {{
         ?version :image ?image .
     }} 
     
-}} GROUP BY ?label ?authorityLabel ?summary ?image
+}} GROUP BY ?label ?authorityLabel ?summary ?image ?wikiurl
 ?dayStart ?monthStart ?yearStart
 ?dayEnd ?monthEnd ?yearEnd
 """
 
 place = """
-select DISTINCT ?label ?event ?eventLabel ?location ?lat ?lng
+select DISTINCT ?label ?event ?eventLabel ?location ?lat ?lng ?summary ?wikiurl
 where {{
     :{0} rdf:type geo:Feature ;
         rdfs:label ?label ;
         
+    OPTIONAL {{
+        :{0} :wikiurl ?wikiurl
+    }}
+    
     OPTIONAL {{
         :{0} geo:hasGeometry ?geometryA .
         
@@ -352,17 +360,29 @@ where {{
         )
     }}
     
+    OPTIONAL {{
+        :{0} dc:description ?summary .
+    }}
+    
 }}
 """
 
 actor = """
-select DISTINCT ?label ?image
+select DISTINCT ?label ?image ?summary ?wikiurl
 ?dayStart ?monthStart ?yearStart
 ?dayEnd ?monthEnd ?yearEnd
 (GROUP_CONCAT(DISTINCT ?event; SEPARATOR=",") AS ?event)
 (GROUP_CONCAT(DISTINCT ?eventLabel; SEPARATOR=",") AS ?eventLabel)
 where {{    
     :{0} rdfs:label ?label .
+    
+    OPTIONAL {{
+        :{0} dc:description ?summary .
+    }}
+    
+    OPTIONAL {{
+        :{0} :wikiurl ?wikiurl .
+    }}
     
     OPTIONAL {{
         :{0} time:hasTime ?tempEntity .
@@ -413,7 +433,7 @@ where {{
             rdfs:label ?eventLabel .
     }}    
 }}
-GROUP BY ?label ?image
+GROUP BY ?label ?image ?summary ?wikiurl
 ?dayStart ?monthStart ?yearStart
 ?dayEnd ?monthEnd ?yearEnd
 """
