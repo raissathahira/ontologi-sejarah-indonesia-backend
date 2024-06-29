@@ -5,9 +5,10 @@ from django.http import JsonResponse
 from shapely import wkt
 from shapely.geometry import mapping
 
-from map.queries import prefix, get_timeline_actor, get_timeline_event, get_timeline_place, get_search_events, \
+from map.queries import prefix, get_timeline_actor, get_timeline_event, get_timeline_place, \
     get_timeline_event_homepage, get_timeline_actor_homepage, get_timeline_place_homepage, get_timeline_navbar, \
-    get_timeline_navbar_actors, get_timeline_navbar_features
+    get_timeline_navbar_actors, get_timeline_navbar_features, get_types, get_search_events_actor, \
+    get_search_events_feature
 
 from map.views import get_largest_bound
 
@@ -39,7 +40,7 @@ def timeline(request):
 def show_events(request):
     iri = request.GET.get('filter[iri]', '')
 
-    query = prefix + get_search_events.format(iri)
+    query = prefix + get_types.format(iri)
 
     sparql = SPARQLWrapper(graphdb)
     sparql.setQuery(query)
@@ -47,7 +48,17 @@ def show_events(request):
 
     results = sparql.query().convert()
 
-    data = mapping_timeline('Event', results)
+    if 'Actor' in  results['results']['bindings'][0]['typeLabels']['value']:
+        q2 = prefix + get_search_events_actor.format(iri)
+    else :
+        q2 = prefix + get_search_events_feature.format(iri)
+
+    sparql = SPARQLWrapper(graphdb)
+    sparql.setQuery(q2)
+    sparql.setReturnFormat(JSON)
+
+    results2 = sparql.query().convert()
+    data = mapping_timeline('Event', results2)
 
     return JsonResponse(data, safe=False)
 
