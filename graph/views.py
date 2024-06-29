@@ -288,7 +288,7 @@ def uri_page(request):
         hasil['image'] = get_image2(hasil['label'])
         hasil['type']=get_type2(data.get('iri',''))
         hasil['start-year']=get_year(data.get('iri',''),hasil['type'])
-        hasil['wikiurl'] = get_wikiurl(data.get('iri'))
+        hasil['wikiurl'] = get_wikiurl2(data.get('iri'))
         hasil['type'] = clean(hasil['type'])
         
         print(hasil['image'])
@@ -317,7 +317,7 @@ def get_type2(iri):
         return ""
     return ret['results']['bindings'][0]['type']['value']
 
-def get_wikiurl(iri):
+def get_wikiurl2(iri):
     query = (prefix + get_wikiurl).format(iri)
     sparql = SPARQLWrapper(
             blazegraph_url
