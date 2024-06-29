@@ -8,7 +8,7 @@ from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
-from .queries import prefix,get_data,get_label
+from .queries import *
 
 common = "http://commons.wikimedia.org/wiki/Special:FilePath/"
 notFound = "default.png"
@@ -286,6 +286,10 @@ def uri_page(request):
         hasil = template("internal",data.get("iri",""))
         hasil['label'] = label(data.get("iri",""))
         hasil['image'] = get_image2(hasil['label'])
+        hasil['type']=get_type2(data.get('iri',''))
+        hasil['start-year']=get_year(data.get('iri',''),hasil['type'])
+        hasil['wikiurl'] = get_wikiurl(data.get('iri'))
+        hasil['type'] = clean(hasil['type'])
         
         print(hasil['image'])
         return JsonResponse(hasil,safe=False)
@@ -297,4 +301,52 @@ def tes(request):
     print(request.headers)
     # print(request.META)
     return JsonResponse({'ok':'ok'})
+
+def get_type2(iri):
+    query = (prefix + get_type).format(iri)
+    sparql = SPARQLWrapper(
+            blazegraph_url
+            )
+    print(iri)
+    sparql.setQuery(query
+            )
+    
+    sparql.setReturnFormat(JSON)
+    ret = sparql.queryAndConvert()
+    if ret["results"]["bindings"] == []:
+        return ""
+    return ret['results']['bindings'][0]['type']['value']
+
+def get_wikiurl(iri):
+    query = (prefix + get_wikiurl).format(iri)
+    sparql = SPARQLWrapper(
+            blazegraph_url
+            )
+    print(iri)
+    sparql.setQuery(query
+            )
+    
+    sparql.setReturnFormat(JSON)
+    ret = sparql.queryAndConvert()
+    if ret["results"]["bindings"] == []:
+        return ""
+    return ret['results']['bindings'][0]['wikiurl']['value']
+
+def get_year(iri,type):
+    if(type=="sem:Event"):
+        query = (prefix + get_start_year_event).format(iri)
+    else:
+        query = query = (prefix + get_start_year).format(iri)
+    sparql = SPARQLWrapper(
+            blazegraph_url
+            )
+    print(iri)
+    sparql.setQuery(query
+            )
+    
+    sparql.setReturnFormat(JSON)
+    ret = sparql.queryAndConvert()
+    if ret["results"]["bindings"] == []:
+        return ""
+    return ret['results']['bindings'][0]['year']['value']
          
