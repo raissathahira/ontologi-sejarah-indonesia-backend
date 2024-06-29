@@ -160,6 +160,11 @@ def get_event_detail(iri, detail):
         return
 
     detail["detail"]["name"] = ("Nama", result["label"]["value"])
+    detail["wikiurl"] = result["wikiurl"]["value"] if "wikiurl" in result else None
+    detail["type"] = "Event"
+    
+    if "summary" in result:
+        detail["detail"]["summary"] = ("Deskripsi", result["summary"]["value"])
     
     startDate = format_date(
         result["dayStart"]["value"] if "dayStart" in result else None,
@@ -220,7 +225,12 @@ def get_place_detail(iri, detail):
     if result == []:
         return
 
+    detail["wikiurl"] = result["wikiurl"]["value"] if "wikiurl" in result else None
     detail["detail"]["name"] = ("Nama", result[0]["label"]["value"])
+    detail["type"] = ["Feature"]
+    
+    if "summary" in result:
+        detail["detail"]["summary"] = ("Deskripsi", result["summary"]["value"])
 
     detail["detail"]["coordinate"] = (
         "Koordinat (dalam lat dan lng)", "(" + result[0]["lat"]["value"] + ", " + result[0]["lng"]["value"] + ")")
@@ -247,7 +257,12 @@ def get_actor_detail(iri, detail):
     result = results["results"]["bindings"][0]
 
     detail["image"] = result["image"]["value"] if "image" in result else None
+    detail["wikiurl"] = result["wikiurl"]["value"] if "wikiurl" in result else None
+    detail["type"] = ["Actor"]
     detail["detail"]["name"] = ("Nama", result["label"]["value"])
+    
+    if "summary" in result:
+        detail["detail"]["summary"] = ("Deskripsi", result["summary"]["value"])
     
     startDate = format_date(
         result["dayStart"]["value"] if "dayStart" in result else None,
