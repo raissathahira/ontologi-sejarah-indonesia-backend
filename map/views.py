@@ -202,11 +202,9 @@ def get_event_detail(iri, detail):
                 (iri[len(base_prefix):], label)
                 for iri, label in zip(result[multivalued_attr[i]]["value"].split(","), result[multivalued_attr[i] + "Label"]["value"].split(","))
             ])
-        else:
-            detail["detail"][multivalued_attr[i]] = (
-                multivalued_label[i], None)
 
-    if "location" in result:
+    if len(result["location"]["value"]) != 0:
+        print(result["location"]["value"])
         detail["location"] = [
             mapping(wkt.loads(location)) for location in result["location"]["value"].split("|")]
         detail["bounds"] = get_largest_bound(detail["location"])
