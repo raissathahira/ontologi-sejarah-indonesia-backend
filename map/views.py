@@ -193,8 +193,8 @@ def get_event_detail(iri, detail):
                 )
             )
 
-        multivalued_attr = ["actor", "person", "feature"]
-        multivalued_label = ["Pihak terlibat", "Tokoh terlibat", "Lokasi kejadian"]
+        multivalued_attr = ["actor", "person", "feature", "superEvent", "subEvent"]
+        multivalued_label = ["Pihak terlibat", "Tokoh terlibat", "Lokasi kejadian", "Bagian dari", "Terdiri dari"]
         
         for i in range(len(multivalued_attr)):
             if result[multivalued_attr[i]]['value']:
