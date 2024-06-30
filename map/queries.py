@@ -377,6 +377,10 @@ select DISTINCT ?label ?authorityLabel ?summary ?image ?wikiurl
 (GROUP_CONCAT(DISTINCT ?personLabel; SEPARATOR=",") AS ?personLabel)
 (GROUP_CONCAT(DISTINCT ?feature; SEPARATOR=",") AS ?feature)
 (GROUP_CONCAT(DISTINCT ?featureLabel; SEPARATOR=",") AS ?featureLabel)
+(GROUP_CONCAT(DISTINCT ?superEvent; SEPARATOR=",") AS ?superEvent)
+(GROUP_CONCAT(DISTINCT ?superEventLabel; SEPARATOR=",") AS ?superEventLabel)
+(GROUP_CONCAT(DISTINCT ?subEvent; SEPARATOR=",") AS ?subEvent)
+(GROUP_CONCAT(DISTINCT ?subEventLabel; SEPARATOR=",") AS ?subEventLabel)
 where {{    
     :{0} rdf:type sem:Event ;
     rdfs:label ?label ;
@@ -459,7 +463,19 @@ where {{
         
     OPTIONAL {{
         ?version :image ?image .
-    }} 
+    }}
+    
+    OPTIONAL {{
+        ?version sem:subEventOf ?superEventVersion .
+        ?superEvent rdfs:seeAlso ?superEventVersion .
+        ?superEvent rdfs:label ?superEventLabel
+    }}
+    
+    OPTIONAL {{
+        ?version sem:hasSubEvent ?subEventVersion .
+        ?subEvent rdfs:seeAlso ?subEventVersion .
+        ?subEvent rdfs:label ?subEventLabel
+    }}
     
 }} GROUP BY ?label ?authorityLabel ?summary ?image ?wikiurl
 ?dayStart ?monthStart ?yearStart
