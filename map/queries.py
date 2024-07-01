@@ -48,7 +48,7 @@ select DISTINCT ?a ?label ?type ?summary ?firstDateYear where {{
     
     FILTER (?type IN ( sem:Event, sem:Actor, geo:Feature ))
     FILTER (CONTAINS(LCASE(STR(?c)), LCASE("{0}")))
-    BIND(IF(LCASE(STR(?label)) = LCASE(("{0}")), 0, 1) AS ?priority)
+    BIND(IF(strstarts(LCASE(STR(?label)), LCASE(("{0}"))), 0, 1) AS ?priority)
 }}
 ORDER BY ?priority ASC(?label)
 LIMIT 10
