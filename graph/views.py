@@ -176,7 +176,8 @@ def template(sourcedata,iri):
     hasil = {
         'property':{},
         'image':"",
-        'label':""
+        'label':"",
+        'teks':""
     }
     
     if ret["results"]["bindings"] == []:
@@ -187,87 +188,22 @@ def template(sourcedata,iri):
             hasil['property'][clean(r['p']['value'])] = {'value':[{
                                                                     'iri':clean(r['o']['value']),
                                                                     'label':clean(r['olabel']['value']),
-                                                                    'detail':clean(r['plabel']['value'])
+                                                                    'detail':clean(r['comment']['value']),
+                                                                    
                                                                 }],
+                                                         'teks':r['plabel']['value'],
                                                          'status':True
                                                         }
         else :
             hasil['property'][clean(r['p']['value'])]['value'].append({
                                                                     'iri':clean(r['o']['value']),
                                                                     'label':clean(r['olabel']['value']),
-                                                                    'detail':clean(r['plabel']['value'])
+                                                                    'detail':clean(r['plabel']['value']),
+                                                                    'teks':r['comment']['value']
                                                                 })
         
     return hasil
 
-def template2(sourcedata,prefix):
-    if(sourcedata=="internal"):
-        source = blazegraph_url
-    elif(sourcedata == 'dbpedia'):
-        source = "https://dbpedia.org/sparql"
-    
-    sparql = SPARQLWrapper(
-            source
-            )
-    sparql.setQuery("""
-                PREFIX dbo: <http://dbpedia.org/ontology/>
-                prefix :    <http://127.0.0.1:3333/> 
-                prefix knoprop: <http://knowledge.com/property#> 
-                prefix owl:   <http://www.w3.org/2002/07/owl#> 
-                prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-                prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> 
-                prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
-                prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
-                prefix resource: <http://dbpedia.org/resource/> 
-                prefix sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
-                select distinct ?s ?label  where{  ?s rdf:type ?p.
-                                                    ?p rdfs:subClassOf sem:Event.
-                                                ?s rdfs:label ?label.}
-                """ 
-            )
-    sparql.setReturnFormat(JSON)
-    ret = sparql.queryAndConvert()
-    hasil = []
-    hasil2 = {}
-    
-                # print(ret)
-    variable = ret['head']['vars']
-    for r in ret["results"]["bindings"]:
-        hasil.append(clean(r['label']['value']))
-        hasil2[clean(r['label']['value'])] = clean(r['s']['value'])
-        hasil2[clean(r['s']['value'])] = clean(r['label']['value'])
-
-    sparql = SPARQLWrapper(
-            source
-            )
-    sparql.setQuery("""
-                PREFIX dbo: <http://dbpedia.org/ontology/>
-                prefix :    <http://127.0.0.1:3333/> 
-                prefix knoprop: <http://knowledge.com/property#> 
-                prefix owl:   <http://www.w3.org/2002/07/owl#> 
-                prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
-                prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> 
-                prefix vcard: <http://www.w3.org/2006/vcard/ns#> 
-                prefix xsd:   <http://www.w3.org/2001/XMLSchema#>
-                prefix resource: <http://dbpedia.org/resource/> 
-                prefix sem: <http://semanticweb.cs.vu.nl/2009/11/sem/>
-                select distinct ?s ?label  where{  ?s rdf:type ?p.
-                                                    ?p rdfs:subClassOf sem:Actor.
-                                                ?s rdfs:label ?label.}
-                """ 
-            )
-    sparql.setReturnFormat(JSON)
-    ret = sparql.queryAndConvert()
-    
-                # print(ret)
-    variable = ret['head']['vars']
-    for r in ret["results"]["bindings"]:
-        hasil.append(clean(r['label']['value']))
-        hasil2[clean(r['label']['value'])] = clean(r['s']['value'])
-        hasil2[clean(r['s']['value'])] = clean(r['label']['value'])
-        
-
-    return [hasil,hasil2]
 
 def clean(iri):
     # print(iri)
