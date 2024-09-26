@@ -1,13 +1,13 @@
 {
   "builds": [{
-      "src": "ontologi-sejarah-indonesia/wsgi.py",
+      "src": "ontologi_sejarah_indonesia/wsgi.py",
       "use": "@vercel/python",
       "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
   }],
   "routes": [
       {
           "src": "/(.*)",
-          "dest": "ontologi-sejarah-indonesia/wsgi.py"
+          "dest": "ontologi_sejarah_indonesia/wsgi.py"
       }
   ]
 }
