@@ -9,7 +9,7 @@
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "ontologi-sejarah-indonesia/wsgi.py"
+        "dest": "ontologi_sejarah_indonesia/wsgi.py"
       }
     ]
   }
