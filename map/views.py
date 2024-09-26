@@ -6,7 +6,7 @@ from shapely.ops import unary_union
 from .queries import prefix, get_map, get_all, get_search, get_total_search, get_types, event, actor, person, place
 
 base_prefix = "http://127.0.0.1:3333/"
-graphdb = "http://localhost:7200/repositories/indonesia-history-ontology"
+graphdb = "http://34.87.85.50:7200/repositories/indonesia-history-ontology"
 
 def fetch_map_data(request):
     query = prefix + get_map

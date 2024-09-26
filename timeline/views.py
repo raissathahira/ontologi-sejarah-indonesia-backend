@@ -12,7 +12,8 @@ from map.queries import prefix, get_timeline_actor, get_timeline_event, get_time
 
 from map.views import get_largest_bound
 
-graphdb = "http://localhost:7200/repositories/indonesia-history-ontology"
+graphdb = "http://34.87.85.50:7200/repositories/indonesia-history-ontology"
+
 
 def timeline(request):
     search = request.GET.get('filter[search]', '').replace('(', '\\\(').replace(')', '\\\)')
