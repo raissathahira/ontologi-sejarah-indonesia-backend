@@ -1,0 +1,12 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+# Tambahkan paket yang Anda butuhkan di sini, misalnya:
+# django = "*"
+# flask = "*"
+
+[requires]
+python_version = "3.9"
