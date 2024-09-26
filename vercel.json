@@ -2,14 +2,14 @@
     "version": 2,
     "builds": [
       {
-        "src": "ontologi-sejarah-indonesia-backend/wsgi.py",
+        "src": "ontologi-sejarah-indonesia/wsgi.py",
         "use": "@vercel/python"
       }
     ],
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "ontologi-sejarah-indonesia-backend/wsgi.py"
+        "dest": "ontologi-sejarah-indonesia/wsgi.py"
       }
     ]
   }
