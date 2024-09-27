@@ -14,4 +14,5 @@ from django.core.asgi import get_asgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ontologi_sejarah_indonesia.settings')
 
 application = get_asgi_application()
+
 app = application
